@@ -1,6 +1,6 @@
 ---
 name: taketwo-scroll
-description: Lenis + GSAP ScrollTrigger bridge pattern used by the TakeTwo studio site. Documents the rAF-shared loop, the conditional smooth-scroll based on quality tier, the five canonical ScrollTrigger patterns (scrub-onUpdate, class-toggle, body-flag), and the scroll-progress-to-3D handoff. Triggers on Lenis, ScrollTrigger, smooth scroll, scroll-driven animation, scroll progress, scroll-bound camera, scroll-bound shader uniform, parallax, scroll pinning, scrollytelling, scroll restoration, scroll cue, scroll cascade, persistent canvas + scroll, scroll-driven shader uniform.
+description: Lenis + GSAP ScrollTrigger bridge pattern used by the TakeTwo studio site. Documents the rAF-shared loop, the conditional smooth-scroll based on quality tier, the five canonical ScrollTrigger patterns (scrub-onUpdate, class-toggle, body-flag), and the scroll-progress-to-3D handoff. Triggers on Lenis, ScrollTrigger, smooth scroll, scroll-driven animation, scroll progress, scroll-bound camera, scroll-bound shader uniform, parallax, scroll pinning, scrollytelling, scroll restoration, scroll cue, scroll cascade, persistent canvas + scroll, scroll-driven shader uniform. Do NOT use for non-scroll GSAP timelines, CSS scroll-snap, or basic anchor-link smooth scrolling.
 ---
 
 # taketwo-scroll

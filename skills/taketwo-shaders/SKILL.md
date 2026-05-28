@@ -1,6 +1,6 @@
 ---
 name: taketwo-shaders
-description: Premium shader and postprocessing stack for TakeTwo studio work. Documents the LDR-composer bloom + dither preset, the iridescent fresnel + cheap-noise vertex displacement material, the extruded-word text pipeline, and the kit-vs-site shader boundary. Triggers on GLSL, fragment shader, vertex shader, custom material, ShaderMaterial, dither, bloom, postprocessing, fresnel, iridescent, displacement, surface noise, extruded text, 3D type, MSDF, premium material, raw GLSL import, sculpture material, ExtrudeGeometry, brand-as-form.
+description: Premium shader and postprocessing stack for TakeTwo studio work. Documents the LDR-composer bloom + dither preset, the iridescent fresnel + cheap-noise vertex displacement material, the extruded-word text pipeline, and the kit-vs-site shader boundary. Triggers on GLSL, fragment shader, vertex shader, custom material, ShaderMaterial, dither, bloom, postprocessing, fresnel, iridescent, displacement, surface noise, extruded text, 3D type, MSDF, premium material, raw GLSL import, sculpture material, ExtrudeGeometry, brand-as-form. Do NOT use when "bloom", "displacement", or "dither" appear outside a GLSL/WebGL material context, or when the existing kit postfx composer already covers the need — reference it, don't rebuild.
 ---
 
 # taketwo-shaders
