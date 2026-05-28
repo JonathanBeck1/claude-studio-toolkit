@@ -1,0 +1,22 @@
+[
+  {"query": "I want the TAKETWO hero letters to have that oily iridescent sheen that shifts from violet to teal as you orbit the camera — how do I write the fragment shader for that?", "should_trigger": true},
+  {"query": "Add vertex displacement to the hero sculpture so the surface ripples slightly with a noise function, and keep it cheap enough for mobile", "should_trigger": true},
+  {"query": "Set up the bloom + dither postprocessing composer for the home scene the way we do it on the studio site", "should_trigger": true},
+  {"query": "Write a custom ShaderMaterial for the extruded TAKETWO type with a fresnel rim light", "should_trigger": true},
+  {"query": "How do I extrude the word WEB into 3D type with bevels and give it our brand iridescent material for the services page?", "should_trigger": true},
+  {"query": "The fresnel rim on the sculpture is way too strong, I need to tune the rim mix in the fragment shader", "should_trigger": true},
+  {"query": "I'm writing a GLSL fragment shader for a new hero and want it to match our premium look — what's our approach for the material?", "should_trigger": true},
+  {"query": "Add subtle film grain / dither over the WebGL scene so it stops banding on the dark gradients", "should_trigger": true},
+  {"query": "I need an MSDF text shader for crisp 3D labels rendered inside the scene", "should_trigger": true},
+  {"query": "Build the iridescent material with cheap sin-based surface noise like the hero sculpture uses", "should_trigger": true},
+  {"query": "Add a soft bloom glow to this product photo in the hero using a CSS filter", "should_trigger": false},
+  {"query": "The hero section feels flat — can we add a subtle box-shadow and a CSS backdrop-blur to the cards?", "should_trigger": false},
+  {"query": "Just bump the bloom intensity number in our existing kit postfx composer — don't rewrite the composer, only change the value", "should_trigger": false},
+  {"query": "On hover, displace this paragraph of text 10px to the right with a CSS transition", "should_trigger": false},
+  {"query": "Write a Photoshop action that adds a dither pattern when exporting GIFs", "should_trigger": false},
+  {"query": "Add a CSS gradient with a grain-texture PNG overlay to the about section background", "should_trigger": false},
+  {"query": "Set up GSAP ScrollTrigger so the hero pins while you scroll down the page", "should_trigger": false},
+  {"query": "Our Lighthouse score dropped — investigate why the JS bundle got so large", "should_trigger": false},
+  {"query": "Add an iridescent holographic conic-gradient in CSS to the button borders", "should_trigger": false},
+  {"query": "Convert this SVG logo to a PNG and optimize the file size", "should_trigger": false}
+]

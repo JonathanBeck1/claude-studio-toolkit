@@ -1,0 +1,22 @@
+[
+  {"query": "Starting a new three.js hero scene for the landing page — set up the renderer, camera, and a dimensional brand subject the premium way", "should_trigger": true},
+  {"query": "Build a WebGL scene with a custom-shader sculpture for the homepage, our usual premium approach", "should_trigger": true},
+  {"query": "Add a postprocessing chain with bloom and grain to the three.js scene I'm building", "should_trigger": true},
+  {"query": "I'm coding the 3D experience for the services page — how should I structure the scene and materials for agency-grade quality?", "should_trigger": true},
+  {"query": "Set up MSDF text in the three.js scene for crisp 3D headings", "should_trigger": true},
+  {"query": "Wire up the persistent WebGL canvas so it survives route changes between pages", "should_trigger": true},
+  {"query": "Writing a Three.js scene from scratch — what geometry approach keeps it from looking like a default examples demo?", "should_trigger": true},
+  {"query": "Add scroll-driven camera movement to the three.js hero (the 3D camera choreography side of it)", "should_trigger": true},
+  {"query": "I need to instance about 500 meshes in three.js performantly for the hero — what's our budget and approach?", "should_trigger": true},
+  {"query": "Building an interactive 3D product viewer in three.js for a client deliverable and I want it premium, not template-y", "should_trigger": true},
+  {"query": "Review the existing HeroSculpture.ts for slop and tell me what to fix", "should_trigger": false},
+  {"query": "Audit our scene code against the slop checklist and report findings", "should_trigger": false},
+  {"query": "Animate this DOM hero heading with a GSAP fade-up on page load", "should_trigger": false},
+  {"query": "Add a CSS 3D transform (perspective + rotateY) flip to the card on hover", "should_trigger": false},
+  {"query": "Fix a TypeScript type error in our analytics utility module", "should_trigger": false},
+  {"query": "Make the mobile nav menu slide in with a CSS transition", "should_trigger": false},
+  {"query": "Set up a Lottie animation for the page loading spinner", "should_trigger": false},
+  {"query": "Convert our SVG icon set into an icon font", "should_trigger": false},
+  {"query": "Add a CSS parallax effect to the background image in the about section", "should_trigger": false},
+  {"query": "Write unit tests for the scroll utility function", "should_trigger": false}
+]
