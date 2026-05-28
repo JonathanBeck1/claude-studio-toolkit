@@ -1,0 +1,22 @@
+[
+  {"query": "Wire up Lenis smooth scrolling on the studio site and bridge it to GSAP ScrollTrigger", "should_trigger": true},
+  {"query": "I want the hero to pin while the user scrolls and scrub a timeline — set up the ScrollTrigger", "should_trigger": true},
+  {"query": "Drive a scroll-bound shader uniform from scroll progress on the home scene", "should_trigger": true},
+  {"query": "Add scroll progress that moves the three.js camera as the user scrolls down the page", "should_trigger": true},
+  {"query": "Set up scrollytelling sections that reveal as they enter the viewport on our site", "should_trigger": true},
+  {"query": "Smooth scroll should only kick in on the high quality tier — how do we gate Lenis by tier?", "should_trigger": true},
+  {"query": "Add a scroll cue that fades out once the user starts scrolling", "should_trigger": true},
+  {"query": "Bridge Lenis to ScrollTrigger so they share one rAF loop instead of running two", "should_trigger": true},
+  {"query": "Build a parallax effect tied to scroll progress in the WebGL hero", "should_trigger": true},
+  {"query": "Persist the canvas across scroll and hand the scroll progress into the 3D scene", "should_trigger": true},
+  {"query": "Add a CSS scroll-snap between the full-screen sections", "should_trigger": false},
+  {"query": "Make the 'back to top' link smooth-scroll using CSS scroll-behavior: smooth", "should_trigger": false},
+  {"query": "Build a GSAP timeline that fades in the modal when the button is clicked", "should_trigger": false},
+  {"query": "Animate the hero heading with a GSAP stagger on page load", "should_trigger": false},
+  {"query": "Write the fragment shader for the iridescent hero material", "should_trigger": false},
+  {"query": "Set up the three.js renderer and scene from scratch for a new page", "should_trigger": false},
+  {"query": "Fix the sticky header using CSS position: sticky", "should_trigger": false},
+  {"query": "Add a CSS hover transition to the nav links", "should_trigger": false},
+  {"query": "Write a Playwright test that scrolls the page to the footer and checks it rendered", "should_trigger": false},
+  {"query": "Add a CSS-only marquee that scrolls text horizontally on a loop", "should_trigger": false}
+]
