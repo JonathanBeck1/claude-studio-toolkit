@@ -157,4 +157,4 @@ Rules for the punch list:
 
 The cost of a false positive (flagging a non-issue) is low; the cost of a false negative (missing real slop that ships to a client) is high. Lean toward calling out the borderline cases, but mark them honestly — "Optional" for stylistic, "Should fix" for noticeable, "Critical" only when it's clearly broken or off-brand.
 
-When you're not sure if something is slop, ask: *would this be in the top reference scenes on the taketwo-threejs skill?* If clearly no, flag it.
+When you're not sure if something is slop, ask: *would this be in the top reference scenes on the aether-threejs skill?* If clearly no, flag it.

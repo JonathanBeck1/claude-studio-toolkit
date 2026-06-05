@@ -1,9 +1,9 @@
 ---
-name: taketwo-scroll
+name: aether-scroll
 description: Lenis + GSAP ScrollTrigger bridge pattern used by the TakeTwo studio site. Documents the rAF-shared loop, the conditional smooth-scroll based on quality tier, the five canonical ScrollTrigger patterns (scrub-onUpdate, class-toggle, body-flag), and the scroll-progress-to-3D handoff. Triggers on Lenis, ScrollTrigger, smooth scroll, scroll-driven animation, scroll progress, scroll-bound camera, scroll-bound shader uniform, parallax, scroll pinning, scrollytelling, scroll restoration, scroll cue, scroll cascade, persistent canvas + scroll, scroll-driven shader uniform. Do NOT use for non-scroll GSAP timelines, CSS scroll-snap, or basic anchor-link smooth scrolling.
 ---
 
-# taketwo-scroll
+# aether-scroll
 
 Technique reference for the Lenis + GSAP ScrollTrigger stack used on TakeTwo Media. Invoke before writing scroll-driven motion on any TakeTwo client deliverable.
 
@@ -58,8 +58,8 @@ After implementing, run `premium-review` per the studio bar.
 
 ## After the skill
 
-- Point Claude at `taketwo-threejs` if the scroll-bound value is a shader uniform.
-- Point at `taketwo-shaders` if the value drives material parameters.
+- Point Claude at `aether-threejs` if the scroll-bound value is a shader uniform.
+- Point at `aether-shaders` if the value drives material parameters.
 - Recipes in `recipes.md` show the copy-paste skeletons. Cite `file:line` in commit messages so future grep finds the lineage.
 
 ## Files

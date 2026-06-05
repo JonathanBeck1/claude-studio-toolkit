@@ -3,7 +3,7 @@ description: Run the TakeTwo first-session onboarding ritual for a new collabora
 argument-hint: [no args — fires the full ritual]
 ---
 
-Invoke the `taketwo-onboard` skill. Run the full ritual end-to-end:
+Invoke the `aether-onboard` skill. Run the full ritual end-to-end:
 
 1. Greet (read `tour.md` Opening).
 2. Verify environment (`git rev-parse --show-toplevel`, `node --version >=22.12.0`, `clients/taketwo-media/site/node_modules/` check).

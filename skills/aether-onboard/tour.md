@@ -1,6 +1,6 @@
 # TakeTwo Studio Onboarding Tour
 
-Briefing content for the `taketwo-onboard` ritual. Claude reads these sections aloud during steps 1, 5, and 6 of the ritual. Paraphrase naturally to match the user's experience level; do not skip sections.
+Briefing content for the `aether-onboard` ritual. Claude reads these sections aloud during steps 1, 5, and 6 of the ritual. Paraphrase naturally to match the user's experience level; do not skip sections.
 
 ## 1. Opening
 
@@ -16,7 +16,7 @@ TakeTwo positions against Active Theory, Lusion, and Resn. The studio sells agai
 
 ## 4. How to work here
 
-- Invoke the `taketwo-threejs` skill BEFORE writing any 3D code. It has the slop checklist and technique recipes. Mandatory, not optional.
+- Invoke the `aether-threejs` skill BEFORE writing any 3D code. It has the slop checklist and technique recipes. Mandatory, not optional.
 - For non-trivial work (multi-file change, new feature, refactor), use Plan mode — write a plan doc in `docs/superpowers/plans/` with date prefix, get approval, execute.
 - For risky changes, use a git worktree. The `using-git-worktrees` skill handles this.
 - Before reporting "done" on any premium-component or WebGL work, run the `premium-review` subagent. It chains threejs-audit + brand-check + the ship checklist.
@@ -42,7 +42,7 @@ The studio site has a shipped hero (3D TAKETWO sculpture, custom shader, bloom +
 
 End the ritual by asking the user: "What's the first thing you want to build or fix?" Route their answer:
 
-- **WebGL / 3D / animation work** → start with the `taketwo-threejs` skill
+- **WebGL / 3D / animation work** → start with the `aether-threejs` skill
 - **Brand styling / typography / component change** → start with the `brand-check` skill
 - **Bug fix** → `minimal-change-engineer` subagent
 - **Codebase orientation** → `codebase-onboarding-engineer` subagent

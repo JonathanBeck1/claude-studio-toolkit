@@ -1,6 +1,6 @@
 # TakeTwo Scroll — Technique Recipes
 
-Reference Claude reads when `taketwo-scroll` is invoked. Each recipe cites real `file:line` from the kit + site so it ages with the codebase.
+Reference Claude reads when `aether-scroll` is invoked. Each recipe cites real `file:line` from the kit + site so it ages with the codebase.
 
 **Architecture truth (read first):** `kit/src/scroll/` is empty by design today. The Lenis ↔ ScrollTrigger bridge currently lives inline in `clients/taketwo-media/site/src/scene/scenes/home/HomeScene.ts`. The kit README earmarks the lift for "next site." Until then, the home scene is the canonical implementation and what every new scroll-driven section should mirror.
 
