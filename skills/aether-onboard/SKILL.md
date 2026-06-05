@@ -1,9 +1,9 @@
 ---
-name: taketwo-onboard
+name: aether-onboard
 description: First-session onboarding ritual for a new collaborator on TakeTwo Studio work. Walks through environment verification, context reading, and a structured briefing. Triggers on "I'm new", "onboard me", "where do I start", "first time here", "just joined", "getting set up", "new collaborator", "new engineer", any variation of "help me get oriented", "what is this repo", or signals that the user has never worked in this repo before. Do NOT use for returning collaborators, mid-session re-orientation, or quick "where is X" lookups — this is the full first-session ritual only.
 ---
 
-# taketwo-onboard
+# aether-onboard
 
 Deterministic first-session ritual for a new contributor. Replaces ad-hoc orientation with a structured walk-through: environment check, context reading, briefing, first-day prompt.
 

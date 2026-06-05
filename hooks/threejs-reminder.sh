@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # PostToolUse hook for Edit|Write|MultiEdit.
 # When a file under clients/taketwo-media/site/src/scene/ is touched, remind
-# Claude to invoke the taketwo-threejs slop checklist and run premium-review
+# Claude to invoke the aether-threejs slop checklist and run premium-review
 # before reporting complete.
 set -euo pipefail
 
@@ -18,7 +18,7 @@ case "$file_path" in
   */clients/taketwo-media/site/src/scene/*)
     cat <<'EOF'
 [hook:threejs-reminder] Scene file touched. Before reporting complete:
-  1. Invoke the `taketwo-threejs` skill — confirm against the slop checklist.
+  1. Invoke the `aether-threejs` skill — confirm against the slop checklist.
   2. Run the `premium-review` subagent.
 See /CLAUDE.md for the studio bar.
 EOF
