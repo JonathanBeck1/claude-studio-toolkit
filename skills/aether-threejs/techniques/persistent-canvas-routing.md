@@ -239,44 +239,47 @@ export class HomeScene {
 
 **What belongs in `this.disposables`:** `BufferGeometry`, `Material` (and all subclasses), `Texture`, `WebGLRenderTarget`, `EffectComposer`. Meshes and Groups do not hold GPU memory — the geometry and material they reference do.
 
-### Hooking Astro's after-swap event — top-level router script
+### Routing through the kit — `initSceneRouter` (the shipped pattern)
 
-Register the manager once at module scope so handlers do not stack across navigations.
+As built, `aether/astro → initSceneRouter` owns ALL of this wiring —
+route-table registration, route normalization (prod serves `/web/`,
+dev `/web`), initial-route resolution from the address bar, the
+navigation listener, single-flight init guarding against double-boot,
+and teardown (real teardown only on `beforeunload`; the manager
+survives every swap). Site code passes a routes map once and never
+touches navigation events:
 
-```js
-// src/scene/router.js
-import { SceneManager } from './SceneManager';
-import { HomeScene } from './scenes/HomeScene';
-import { WebScene } from './scenes/WebScene';
-import { SoftwareScene } from './scenes/SoftwareScene';
-import { AIScene } from './scenes/AIScene';
+```ts
+// site/src/scene/boot.ts — the real consumer
+import { initSceneRouter } from 'aether/astro';
 
-const canvas = document.getElementById('scene-canvas');
-const manager = new SceneManager(canvas);
-
-manager.registerScene('/',         (r) => new HomeScene(r));
-manager.registerScene('/web',      (r) => new WebScene(r));
-manager.registerScene('/software', (r) => new SoftwareScene(r));
-manager.registerScene('/ai',       (r) => new AIScene(r));
-
-manager.start();
-
-// Navigate to the scene that matches the current URL on first load.
-manager.transitionTo(window.location.pathname);
-
-// Astro's View Transitions fires this event after the DOM swap completes.
-// SceneManager transitions to the new route's scene.
-document.addEventListener('astro:after-swap', () => {
-  manager.transitionTo(window.location.pathname);
+await initSceneRouter(canvas, {
+  '/': (renderer, quality) => new HomeScene(renderer, quality),
+  '/web': (renderer, quality) => new WebScene(renderer, quality),
 });
 ```
 
-Load this script in the root layout with `type="module"` so it runs exactly once:
+All routes register up front in `boot.ts` — a new page's own scripts
+execute after the swap, which is too late to register the factory the
+transition needs.
 
-```astro
-<!-- src/layouts/Layout.astro — inside <head> or at end of <body> -->
-<script type="module" src="/src/scene/router.js"></script>
-```
+Two deliberate corrections in the shipped design vs this file's
+original sketch:
+
+- **`astro:before-swap`, not `after-swap`, drives the transition.**
+  The event dispatch runs the outgoing scene's `exitTransition`
+  synchronously up to its first `await`, so scroll- and DOM-coupled
+  state (ScrollTriggers, the Lenis bridge) detaches BEFORE Astro
+  mutates the DOM and resets scroll. After-swap is too late — the old
+  triggers would fire `onUpdate` against the new DOM. The event's
+  `e.to.pathname` carries the destination; `location.pathname` is
+  still the OLD route at dispatch time.
+- **`SceneManager.transitionTo` is a latest-wins queue.** Rapid
+  A→B→A converges on the last URL Astro settled on; same-route calls
+  are no-ops; `enterTransition` is NOT awaited by the queue, so a
+  navigation during a long intro interrupts it via `dispose` — scenes
+  must kill their intro timelines there (GSAP `kill()` suppresses
+  `onComplete`, closing the triggers-after-dispose leak).
 
 ### prefers-reduced-motion
 
@@ -312,29 +315,11 @@ return new Promise((resolve) => {
 
 2. **View Transitions API needs a fallback for older browsers.** Safari before version 18 did not support the View Transitions API. When Astro's `<ViewTransitions />` detects no support, it falls back to a full page navigation — the canvas DOM node is replaced and the renderer loses its context. The persistent-canvas architecture silently breaks: the renderer is initialized from scratch, initialization cost returns, and the first frame after each navigation is black. Detect support before relying on the architecture: `if (!document.startViewTransition) { /* fallback: no transition, full reload */ }`. For TakeTwo's audience (premium-targeting, B2B/creative), requiring modern browsers is acceptable. Do not paper over the fallback by pretending it doesn't exist — a black flash is worse than a plain navigation.
 
-3. **Scroll position resets after navigation, ScrollTrigger triggers become stale.** Astro restores the scroll position to the top of the new page after a swap. If you use ScrollTrigger on the incoming page, its trigger positions were calculated against layout measurements that may not match the post-swap DOM — images that loaded at different heights, fonts that caused reflow. After every `astro:after-swap`, call `ScrollTrigger.refresh()` to recalculate all trigger positions for the new content. Call it in the `astro:after-swap` handler, not before — the DOM must be fully in place for the measurements to be accurate.
-
-   ```js
-   import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-   document.addEventListener('astro:after-swap', () => {
-     manager.transitionTo(window.location.pathname);
-     ScrollTrigger.refresh();
-   });
-   ```
+3. **Stale ScrollTriggers across navigation — solved structurally, not with `ScrollTrigger.refresh()`.** In the shipped design no trigger ever outlives its scene: the outgoing scene kills its own triggers synchronously in `exitTransition` (inside the before-swap dispatch, ahead of the DOM mutation and scroll reset), and the incoming scene creates its triggers only AFTER its intro completes, measuring the already-settled new DOM (the aether-scroll triggers-after-intro rule). There is never a stale trigger to refresh. A global `refresh()` on navigation is only needed if a trigger outlives its scene — which is itself the bug to fix.
 
 4. **Canvas does not resize correctly when viewport changes during a transition.** The `handleResize` handler fires immediately on `resize`, but if a scene swap is in progress — `exitTransition` is awaited, `dispose` runs, `preload` runs, `enterTransition` starts — the `activeScene` is in an intermediate state. Calling `this.activeScene.camera.aspect = w / h` mid-swap may set the aspect on a scene that is already disposed or not yet the active one. Two options: (a) queue the resize event and apply it after `transitionTo` resolves (cleaner for hero scenes), or (b) apply immediately and accept a single-frame glitch if the user happens to resize during the 800ms transition window. For TakeTwo's hero scenes, option (a) is preferred — add a `this.pendingResize` flag and flush it at the end of `transitionTo`.
 
-5. **Multiple `astro:after-swap` listeners accumulate.** If the `document.addEventListener('astro:after-swap', ...)` call lives inside a component `<script>` tag that is re-evaluated after each swap, each navigation adds one more listener. The first navigation triggers one `transitionTo`. The second triggers two. By the fifth, the scene transitions five times per navigation, each call trying to dispose and replace the active scene the others just installed — race condition, GPU memory leak, or runtime error depending on timing. The fix is to register the listener exactly once, at module scope, in a top-level script that runs on initial page load and never again. The `router.js` pattern above does this correctly. If you need to register the listener inside a component, guard with `document.body.dataset.swapListenerAttached`:
-
-   ```js
-   if (!document.body.dataset.swapListenerAttached) {
-     document.addEventListener('astro:after-swap', () => {
-       manager.transitionTo(window.location.pathname);
-     });
-     document.body.dataset.swapListenerAttached = 'true';
-   }
-   ```
+5. **Multiple navigation listeners accumulate.** If a navigation `addEventListener` call lives inside a component `<script>` re-evaluated after each swap, each navigation adds one more listener and scene transitions multiply per hop — race condition, GPU memory leak, or runtime error depending on timing. The shipped kit handles this inside `initSceneRouter`: the single-flight init guard means one manager per canvas, the manager registers exactly one persistent `astro:before-swap` listener, and `beforeunload` cleanup removes it. Only hand-rolled routers need the module-scope / body-dataset guard patterns.
 
 ## Reference
 
