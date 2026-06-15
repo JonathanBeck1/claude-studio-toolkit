@@ -16,15 +16,16 @@ this.scroll = quality.enableSmoothScroll
       smoothWheel: true,
       wheelMultiplier: LENIS_WHEEL_MULTIPLIER,
       touchMultiplier: LENIS_TOUCH_MULTIPLIER,
-      syncTouch: false,           // belt-and-braces: never fight iOS
+      syncTouch: true,                                  // smooth scroll-to-3D on touch
+      touchInertiaExponent: LENIS_TOUCH_INERTIA_EXPONENT, // glide decay; Lenis default 1.7
     })
   : null;
 ```
 
 Key points:
-- **Conditional construction.** `quality.enableSmoothScroll` is `tier !== 'LOW' && !isTouch` (`kit/src/quality/quality.ts:120`). When the bridge is null, ScrollTrigger falls back to native scroll events. Don't paper over the null with a fake bridge — the fallback works.
-- **Options pass through verbatim to `new Lenis(...)`.** Brand tuning (`LENIS_DURATION`, multipliers) lives in `site/src/scene/constants.ts`. Tune the feel there, not inline.
-- **`syncTouch: false`** is non-negotiable. Touch sync fights iOS's native momentum and produces visible jitter.
+- **Conditional construction.** `quality.enableSmoothScroll` is `tier !== 'LOW'` (`kit/src/quality/quality.ts`). When the bridge is null (LOW tier), ScrollTrigger falls back to native scroll events. Don't paper over the null with a fake bridge — the fallback works.
+- **Options pass through verbatim to `new Lenis(...)`.** Brand tuning (`LENIS_DURATION`, multipliers, `LENIS_TOUCH_INERTIA_EXPONENT`) lives in `site/src/scene/constants.ts`. Tune the feel there, not inline.
+- **`syncTouch: true`** is the fix for choppy mobile scroll-to-3D. The old advice ("syncTouch fights iOS, leave it false") was wrong for OUR use: native iOS scroll arrives in coarse stepped compositor bursts, so binding the 3D to it reads as choppy. `syncTouch` (Lenis 1.3+) smooths ON TOP of native momentum — it does not hijack scroll — giving touch the same rAF-synced position desktop has. `touchInertiaExponent` shapes the post-flick glide decay (Lenis default 1.7); the per-frame interpolation that smooths iOS's stepped input is `syncTouchLerp` (left at its 0.075 default). With Lenis live on touch, `TOUCH_SCRUB_FACTOR` drops to 1.0 — the heavier scrub was only masking this missing inertial layer.
 
 ---
 
@@ -187,7 +188,7 @@ Order:
 3. Store the handle on the scene (`this.fooTrigger`).
 4. Add the `.kill()` to `dispose()` in the same commit.
 5. Pull thresholds and scrub values from `constants.ts` if reusable, else inline with a one-line comment.
-6. Test the no-bridge fallback (LOW tier / touch: bridge null, native scroll). Scrub feels less buttery but values must still drive correctly.
+6. Test the no-bridge fallback (LOW tier: bridge null, native scroll). Scrub feels less buttery but values must still drive correctly. Touch is NOT a fallback case anymore — it runs the bridge.
 
 ---
 
