@@ -35,10 +35,10 @@ Check each of these and report a pass/fail/observation per item:
 ```
 ## Brand Check: <target>
 
-### ✓ Compliant
+### [PASS] Compliant
 - ...
 
-### ✗ Violations
+### [FAIL] Violations
 - ...
 
 ### Observations

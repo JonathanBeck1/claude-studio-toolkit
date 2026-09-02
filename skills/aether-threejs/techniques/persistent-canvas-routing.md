@@ -48,7 +48,7 @@ npm install gsap
 ### SceneManager — owns the renderer, manages per-route scene swaps
 
 ```js
-// src/scene/SceneManager.js
+// kit/src/core/SceneManager.ts
 import * as THREE from 'three';
 import gsap from 'gsap';
 
@@ -155,7 +155,7 @@ export class SceneManager {
 `SceneManager` calls `preload`, `enterTransition`, `exitTransition`, `tick`, and `dispose` in that order across a scene's lifetime. All transitions return Promises so `transitionTo` can `await` them in sequence.
 
 ```js
-// src/scene/scenes/HomeScene.js
+// site/src/scene/scenes/home/HomeScene.ts
 import * as THREE from 'three';
 import gsap from 'gsap';
 

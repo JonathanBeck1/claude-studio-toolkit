@@ -4,7 +4,7 @@
 
 Hero backgrounds where you need 5,000–50,000 particles flowing in a coherent, organic motion field — neither random (chaotic) nor scripted (mechanical). Curl noise produces divergence-free flow, so particles never bunch up or thin out — they drift in continuous streams.
 
-This is the right particle pattern for: ambient hero atmospheres (`/`), system-flow visualizations (`/software` deep page), generative AI scene (`/ai` deep page).
+**Reference-only.** Ambient particle fields are a logged owner rejection ("seizure-y" — `brain/design-taste.md`) and a listed slop indicator. Never propose this as a hero atmosphere or background fill — only ever as a deliberate accent around a defined subject.
 
 This is the wrong pattern for: literal data viz where particle count maps to a value (use simple instanced meshes), explosion / impact effects (use a one-shot animation), narrative path-following (use spline-driven animation).
 

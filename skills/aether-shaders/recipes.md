@@ -202,7 +202,7 @@ Three-pass pipeline (`extrudedWord.ts:95-198`):
 
 **When to use:**
 - Hero: brand-as-form (`TAKETWO`).
-- Service pages: service-as-form (`WEB`, `SOFTWARE`, `AI` — per `brain/design-taste.md`).
+- Brand-as-form is the HOME page's identity only — the owner rejected extruded-type reuse on service pages (see memory `feedback_design_taste`).
 - Section titles where dimensional type sells the premium frame.
 
 **When NOT to use:**

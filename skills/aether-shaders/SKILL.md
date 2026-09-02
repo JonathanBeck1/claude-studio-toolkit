@@ -39,11 +39,11 @@ Don't promote site shaders to kit without a generalization pass (uniform-driven 
 ## Hard rules
 
 - **GLSL is imported via `?raw`.** Pattern: `import frag from './x.frag.glsl?raw'`. `vite-plugin-glsl` is configured but unused in practice — match the actual codebase, not the config.
-- **`optimizeDeps.exclude: ['aether']` and `preserveSymlinks: true`** are mandatory in `site/astro.config.ts`. Without both, kit's `?raw` consumers break at build.
-- **Postprocessing uses LDR composer** — no `HalfFloatType`. Values clip at 1.0 deliberately as bloom containment. Don't change this without writing a second composer preset.
+- **`optimizeDeps.exclude: ['aether']`** is mandatory in `site/astro.config.ts`. Without it, kit's `?raw` consumers break at build. **NEVER set `preserveSymlinks: true`** — it pins the kit at its node_modules path so kit edits don't hot-reload; `astro.config.ts:26-32` documents the bug.
+- **Two composer presets exist — pick one, don't mutate one into the other.** `createHeroComposer` is LDR by design (no `HalfFloatType`; values clip at 1.0 deliberately as bloom containment). `createNightComposer` (`heroComposer.ts:88`) has an `hdr` option using `HalfFloatType` + ACES `ToneMappingEffect`.
 - **Edge AA comes from the composer's `multisampling`, never the context `antialias` flag.** Post-processing renders into textures that bypass the canvas framebuffer, so context MSAA is visually dead the moment a composer runs (the quality profile sets it false and carries `msaaSamples` instead — wire via `createHeroComposer({ multisampling: quality.msaaSamples })`).
 - **Dither runs on every tier.** It merges into the SAME fullscreen pass as bloom (a few ALU ops — effectively free) and kills the dark-gradient banding that reads as posterized color on mobile OLED. The old "most expensive pass after bloom" claim was measured wrong; don't resurrect it.
-- **Bloom intensity `0.06` is the ceiling.** Higher = glow-spam. Raise `luminanceThreshold` to gate harder if you need more visible bloom.
+- **Bloom intensity `0.06` is the hero-preset ceiling.** Higher = glow-spam. Raise `luminanceThreshold` to gate harder if you need more visible bloom. The night preset ships `0.38` by design — its own ceiling, not a license to raise the hero's.
 - **Custom `ShaderMaterial` only on hero elements.** No `MeshBasicMaterial` / `MeshStandardMaterial` for hero content. See `aether-threejs` and `brain/studio-standards.md`.
 - **Brand tokens through uniforms.** Pull colors from `scene/constants.ts`. Update both `constants.ts` AND `styles/global.css` when a brand color changes (mirrored).
 - **Wire `uTime` through scene tick.** Material uniforms updated from `tick()` or via a wrapper's `tickUniforms`. Never via setInterval.
@@ -52,7 +52,7 @@ Don't promote site shaders to kit without a generalization pass (uniform-driven 
 ## Slop indicators (do not ship)
 
 - Default materials (`MeshBasicMaterial`, `MeshStandardMaterial`) on hero elements.
-- Bloom `intensity > 0.1` or `luminanceThreshold < 0.5`.
+- Bloom `intensity > 0.1` on the hero preset, or `luminanceThreshold < 0.5` (the night preset ships 0.38 by design).
 - Hardcoded `vec3(...)` colors in shaders.
 - Ambient particle fields (covered by `aether-threejs` + `brain/design-taste.md`).
 - ShaderMaterial without `uTime` wired through the manager's tick.

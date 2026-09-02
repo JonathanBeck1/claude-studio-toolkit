@@ -35,11 +35,11 @@ Standards are high. This is premium agency work — three.js scenes that don't l
 Determine what changed. In rough order of preference:
 
 1. If the user named a file or range, audit that.
-2. Otherwise, default to the current branch vs `main`:
+2. Otherwise, default to the current branch vs `master`:
    ```bash
-   git diff --name-only main...HEAD
+   git diff --name-only master...HEAD
    ```
-3. If on `main` or `main` doesn't exist, use staged + unstaged:
+3. If on `master` or `master` doesn't exist, use staged + unstaged:
    ```bash
    git diff --name-only HEAD
    git diff --name-only --cached
@@ -68,17 +68,17 @@ For every changed file, decide which audits apply. A single file can trigger mor
 
 ### 3. Run audits
 
-For each category triggered, invoke the corresponding skill via the Skill tool. Pass the relevant file paths so the skill audits only what changed:
+`threejs-audit` and `brand-check` are slash commands, not skills — do not call `Skill(...)` for them. Apply their checklists directly: Read the command file and follow it against the relevant file paths so the audit covers only what changed:
 
-- three.js triggered → `Skill(threejs-audit)` with the file list
-- brand triggered → `Skill(brand-check)` with the file list
+- three.js triggered → Read `.claude/commands/threejs-audit.md` and apply its checklist to the file list
+- brand triggered → Read `.claude/commands/brand-check.md` and apply its checklist to the file list
 - always → apply the read-only ship-readiness review below (do NOT invoke any `ship` skill or the `/ship` command — `/ship` orchestrates *you*, so calling it would loop)
 
-The audit skills produce their own findings. Your job is to collect, dedupe, and present them — not to re-derive them.
+The command checklists produce the findings. Your job is to collect, dedupe, and present them — not to re-derive standards from memory.
 
 **Ship-readiness review (read-only, always):** scan the diff for ship-blockers visible without running anything — leftover `console.log`/debug statements, committed secrets or `.env` values, large binaries, stray `TODO`/`FIXME` added in this diff, and "while I'm here" scope creep (changes not required by the task). You do NOT run typecheck/lint/tests or commit — that's the `/ship` command's job, which runs after you.
 
-If a skill isn't available or fails, fall back to inline review using these built-in checks:
+If a command file isn't available, fall back to inline review using these built-in checks:
 
 **three.js slop checklist (inline fallback):**
 - Default lighting (just AmbientLight + DirectionalLight at full intensity) — slop

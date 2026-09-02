@@ -8,7 +8,7 @@ Welcome to TakeTwo Studio. This is your orientation session — future sessions 
 
 ## 2. What this repo is
 
-Personal monorepo and command center for TakeTwo Media. The active build is `clients/taketwo-media/site/` — an Astro 6 site running a persistent three.js + GSAP + Lenis canvas. One route today (`/`), hero is shipped, Projects grid just landed, more sections coming. The rest of the repo is supporting machinery: planning docs (`docs/`), studio brain (`brain/`), reference screenshots (`references/`), and Claude skills (`.claude/skills/`). Full layout in `/README.md`.
+Personal monorepo and command center for TakeTwo Media. The active build is `clients/taketwo-media/site/` — an Astro 6 site running a persistent three.js + GSAP + Lenis canvas. Six routes build today — home, `/work`, `/work/[slug]`, `/contact`, 404 (service pages archived; old URLs redirect home). The rest of the repo is supporting machinery: planning docs (`docs/`), studio brain (`brain/`), reference screenshots (`references/`), and Claude skills (`.claude/skills/`). Full layout in `/README.md`.
 
 ## 3. The bar
 
@@ -17,14 +17,14 @@ TakeTwo positions against Active Theory, Lusion, and Resn. The studio sells agai
 ## 4. How to work here
 
 - Invoke the `aether-threejs` skill BEFORE writing any 3D code. It has the slop checklist and technique recipes. Mandatory, not optional.
-- For non-trivial work (multi-file change, new feature, refactor), use Plan mode — write a plan doc in `docs/superpowers/plans/` with date prefix, get approval, execute.
+- For non-trivial work (multi-file change, new feature, refactor), use Plan mode — plan in conversation, get owner approval, execute. (`docs/archive/` holds retired plans — history only.)
 - For risky changes, use a git worktree. The `using-git-worktrees` skill handles this.
 - Before reporting "done" on any premium-component or WebGL work, run the `premium-review` subagent. It chains threejs-audit + brand-check + the ship checklist.
 - Brand tokens (colors, fonts) are mirrored in `clients/taketwo-media/site/src/scene/constants.ts` and `.../src/styles/global.css`. Update both when either changes.
 
 ## 5. What's currently happening
 
-The studio site has a shipped hero (3D TAKETWO sculpture, custom shader, bloom + dither postprocessing) and a recently-landed Projects grid placeholder. No other sections exist yet. The build trajectory lives in `docs/superpowers/plans/` — read the two most recent plan files for current direction. The current phases of work are studio toolkit (shared brain, onboarding skill, quality hooks), not site features.
+The production site is three pages — home, `/work`, `/contact` — in one centered poster grammar; six routes build today (home, `/work`, `/work/[slug]`, `/contact`, 404), with service pages archived and their old URLs redirecting home. Active work is the site itself. Current direction lives in repo `CLAUDE.md` ("Current direction") and the closing section of `brain/design-taste.md`.
 
 ## 6. Files to actually read this week
 
@@ -43,7 +43,7 @@ The studio site has a shipped hero (3D TAKETWO sculpture, custom shader, bloom +
 End the ritual by asking the user: "What's the first thing you want to build or fix?" Route their answer:
 
 - **WebGL / 3D / animation work** → start with the `aether-threejs` skill
-- **Brand styling / typography / component change** → start with the `brand-check` skill
+- **Brand styling / typography / component change** → start with the `brand-check` command
 - **Bug fix** → `minimal-change-engineer` subagent
 - **Codebase orientation** → `codebase-onboarding-engineer` subagent
 - **"I don't know yet"** → suggest reading `clients/taketwo-media/site/README.md` and the two most recent plan files first

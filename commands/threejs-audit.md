@@ -12,7 +12,7 @@ Audit the target three.js code for TakeTwo-quality issues. Target: $ARGUMENTS (d
 1. **Slop checklist** — default-quality giveaways: stock geometry, basic Lambert/Phong with no postprocessing, default rotation/orbit animation, no DPR clamping, particles for the sake of particles.
 2. **Performance budget** — DPR clamped? Frame budget reasonable? Texture sizes power-of-two and reasonable? Geometry instanced where appropriate?
 3. **Postprocessing** — using the `postprocessing` package (already in dependencies)? Sensible passes only, no kitchen-sink stacks?
-4. **Shaders** — uniforms named meaningfully? `vite-plugin-glsl` includes used cleanly? No magic numbers without comments explaining the intent?
+4. **Shaders** — uniforms named meaningfully? GLSL imported via `?raw` (`vite-plugin-glsl` is configured but unused)? No magic numbers without comments explaining the intent?
 5. **Brand-as-form alignment** — does the 3D work *express the brand* (per design-taste memory), or is it generic decoration?
 6. **Lenis + GSAP integration** — scroll-driven scenes use Lenis for smooth scroll, GSAP for orchestration. No double-driving from `requestAnimationFrame` + scroll listeners colliding.
 
@@ -24,13 +24,13 @@ Audit the target three.js code for TakeTwo-quality issues. Target: $ARGUMENTS (d
 ### Files reviewed
 - ...
 
-### 🔴 Blocking issues (must fix before ship)
+### [CRITICAL] Blocking issues (must fix before ship)
 - ...
 
-### 🟡 Quality issues (should fix)
+### [WARN] Quality issues (should fix)
 - ...
 
-### 💭 Observations / opportunities
+### [NOTE] Observations / opportunities
 - ...
 
 ### Skill recipes that would help here

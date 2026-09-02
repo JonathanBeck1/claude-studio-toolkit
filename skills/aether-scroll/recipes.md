@@ -2,6 +2,8 @@
 
 Reference Claude reads when `aether-scroll` is invoked. Each recipe cites real `file:line` from the kit + site so it ages with the codebase. If a cite drifts, fix it in the same PR that moved the code.
 
+Line-number citations in this file predate large HomeScene refactors and have drifted — trust symbol names and grep, not line numbers.
+
 **Architecture truth (read first):** the Lenis ↔ ScrollTrigger bridge lives in the engine at `kit/src/scroll/` — `ScrollBridge` (Lenis lifecycle + idempotent `gsap.registerPlugin` + the `ScrollTrigger.update` wiring + seconds→ms raf) and `createScrollProgress` (one scrubbed trigger mapping page progress 0..1 to a callback). `HomeScene.ts` is the canonical consumer: it constructs the bridge with brand-tuned options and uses the factory for its two progress scrubs. Event-style triggers (class/attr toggles) stay inline in site code by design — they're brand-specific DOM hooks, not engine material.
 
 ---

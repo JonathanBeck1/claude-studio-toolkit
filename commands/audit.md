@@ -31,13 +31,13 @@ Produce a single punch list in this format:
 ### Files reviewed
 - <path> — <category>
 
-### 🔴 Critical (must fix before ship)
+### [CRITICAL] (must fix before ship)
 - <finding> · <file:line> · <quick fix>
 
-### 🟡 Should fix
+### [WARN] Should fix
 - ...
 
-### 🟢 Observations / opportunities
+### [NOTE] Observations / opportunities
 - ...
 
 ### Passed

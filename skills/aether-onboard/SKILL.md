@@ -26,7 +26,7 @@ Invoke EXCLUSIVELY on the first session for a new contributor. For a returning p
    - `/brain/README.md`, `/brain/studio-standards.md`, `/brain/design-taste.md`
    - `/clients/taketwo-media/brand-assets.md`
 
-4. **Survey recent plans.** Run `ls -t docs/superpowers/plans/ | head -2` and read the two most recent plan files in full. These ARE the current trajectory.
+4. **Survey current direction.** Read repo `CLAUDE.md`'s "Current direction" section and the closing section of `brain/design-taste.md`. These ARE the current trajectory. `docs/archive/` is historical — never build from it (see `docs/archive/README.md`).
 
 5. **Brief the human.** Read sections 2–7 of `tour.md` to the user, in order. Paraphrase naturally to match their apparent experience level. Do not skip sections. Do not inject personal opinions.
 
@@ -41,7 +41,7 @@ Invoke EXCLUSIVELY on the first session for a new contributor. For a returning p
 
 ## After the ritual
 
-Point the user at `/CLAUDE.md` as their ongoing reference and at `/docs/superpowers/plans/` for the build spine. Make it clear: next time they sit down, no ritual — just work.
+Point the user at `/CLAUDE.md` ("Current direction") and `brain/design-taste.md` (closing section) as their ongoing references. Make it clear: next time they sit down, no ritual — just work.
 
 ## Files
 

@@ -12,13 +12,13 @@ Steps in order — do not skip:
 2. **Run premium-review.** Invoke the `premium-review` subagent against the current diff. It chains threejs-audit + brand-check + the ship checklist. Wait for its punch list.
 
 3. **Triage findings.**
-   - 🔴 **Critical** → abort the ship flow, surface the issues, ask user how to proceed.
-   - 🟡 **Should fix** → list them, ask user to confirm shipping anyway OR pause to fix.
-   - 🟢 **Passed / Optional** → proceed.
+   - [CRITICAL] **Critical** → abort the ship flow, surface the issues, ask user how to proceed.
+   - [WARN] **Should fix** → list them, ask user to confirm shipping anyway OR pause to fix.
+   - [NOTE] **Passed / Optional** → proceed.
 
 4. **Draft commit message** in conventional-commit format (`type(scope): description`). Types: `feat`, `fix`, `polish`, `chore`, `docs`, `refactor`. Keep subject under 72 chars. Add a body if the diff touches >2 files. Always include the co-author footer:
    ```
-   Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
+   Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
    ```
 
 5. **Show the message + diff summary** and ask for explicit confirmation before committing.

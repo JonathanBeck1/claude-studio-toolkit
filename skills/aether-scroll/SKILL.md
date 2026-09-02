@@ -7,6 +7,8 @@ description: Lenis + GSAP ScrollTrigger bridge for the TakeTwo studio site — n
 
 Technique reference for the Lenis + GSAP ScrollTrigger stack used on TakeTwo Media. Invoke before writing scroll-driven motion on any TakeTwo client deliverable.
 
+Line-number citations in this file predate large HomeScene refactors and have drifted — trust symbol names and grep, not line numbers.
+
 ## When to use
 
 Any of:
@@ -29,7 +31,7 @@ Do NOT invoke for:
 
 - **The bridge is ticked from `SceneManager.tick`, not its own loop.** `HomeScene.ts:508` calls `this.scroll?.raf(time)` from inside `tick()` — `ScrollBridge` converts seconds→ms internally; never multiply at the call site. Never call `lenis.start()`. Two rAF loops produce one-frame lag between scroll and 3D.
 - **The `ScrollBridge` is conditional on `quality.enableSmoothScroll`.** Null on LOW tier only — touch now gets the bridge (Lenis `syncTouch` smooths on top of native iOS momentum, the fix for choppy mobile scroll-to-3D; it does NOT hijack scroll). When null, ScrollTrigger falls back to native scroll automatically — don't paper over the null with a fake bridge. Progress scrubs still work without it: `createScrollProgress` registers the plugin itself.
-- **Construct the bridge at `enterTransition` START, never the scene constructor.** Lenis intercepts wheel from the moment it exists but only moves the page when its raf is pumped — and `tick()` only runs once the scene is the manager's activeScene, after preload. A constructor-built bridge eats every wheel event for the whole preload window, then lurches when ticking starts. Native scroll covers input until enter (see `initScrollBridge` in both scenes).
+- **Construct the bridge at `enterTransition` START, never the scene constructor.** Lenis intercepts wheel from the moment it exists but only moves the page when its raf is pumped — and `tick()` only runs once the scene is the manager's activeScene, after preload. A constructor-built bridge eats every wheel event for the whole preload window, then lurches when ticking starts. Native scroll covers input until enter (see `initScrollBridge` in `HomeScene` — the only scene with a scroll bridge).
 - **Triggers born mid-range teleport.** Creation-time `onUpdate` fires with RAW progress — scrub smooths linked animations, not creation. If the user can be scrolled when `setupScrollTrigger` runs (they scrolled during the intro), reset consumers to rest and ease to the live state with a one-shot catch-up tween (`HomeScene.setupScrollTrigger`'s `catchupTween`).
 - **Progress scrubs come from `createScrollProgress` (aether/scroll), not hand-rolled `ScrollTrigger.create`.** Drift and camera both use it (`HomeScene.ts:357`, `:362`). Event-style triggers (class/attr toggles) stay inline — brand-specific DOM hooks.
 - **ScrollTriggers go through `setupScrollTrigger()`,** called from intro `onComplete`, not from the constructor and not from `preload()`. Triggers measure layout at construction time; create them after the intro has finished modifying layout.

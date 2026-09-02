@@ -16,7 +16,7 @@ Invoke this skill before any three.js work on premium-tier deliverables. The ski
 1. Read `slop-checklist.md` first. If your planned approach trips any checkbox, redesign before coding.
 2. Read `references.md` to find a studio working in the relevant aesthetic. Open the local screenshot for ground truth.
 3. Read the relevant `techniques/` file for a code recipe and required tuning parameters.
-4. Pull GLSL snippets from `shaders/` directly into the project's `vite-plugin-glsl` import path.
+4. Pull GLSL snippets from `shaders/` and import them via `?raw` (`vite-plugin-glsl` is configured but unused — every GLSL import in the codebase uses `?raw`).
 5. After writing code, re-run the slop checklist. Capture a screenshot. Have the user review before committing the rendered scene.
 
 ## Index
