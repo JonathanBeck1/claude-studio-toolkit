@@ -10,7 +10,7 @@ Wrong for: scenes with many distinct objects — every ray must evaluate every S
 
 ## What it gives you
 
-A hero form defined entirely in math: smooth-union merging between displaced spheres that warble organically over time, shaded with a Lambert + fresnel-like color ramp using TakeTwo's violet/teal accent palette. The surface rotates slowly, two lobes pulsing and blending at their junction. Because there are no polygons, the silhouette is infinitely crisp at any resolution, and the smooth-union seam is analytically smooth — no hard edge where the meshes would intersect. The background pixels `discard` cleanly, so the form composites over whatever layer lives beneath it (particles, type, a dark field).
+A hero form defined entirely in math: smooth-union merging between displaced spheres that warble organically over time, shaded with a Lambert + fresnel-like color ramp using two brand accents (violet/teal in the example) palette. The surface rotates slowly, two lobes pulsing and blending at their junction. Because there are no polygons, the silhouette is infinitely crisp at any resolution, and the smooth-union seam is analytically smooth — no hard edge where the meshes would intersect. The background pixels `discard` cleanly, so the form composites over whatever layer lives beneath it (particles, type, a dark field).
 
 ## Primer — signed distance fields and raymarching
 
@@ -40,8 +40,8 @@ const quadMaterial = new THREE.ShaderMaterial({
     uSurfaceThreshold: { value: 0.001 },
     uDisplacement:     { value: 0.3 },
     uRotationSpeed:    { value: 0.2 },
-    uColorA:           { value: new THREE.Color(0xe66cff) }, // violet
-    uColorB:           { value: new THREE.Color(0x59ffe2) }, // teal
+    uColorA:           { value: new THREE.Color(0x8b5cf6) }, // violet
+    uColorB:           { value: new THREE.Color(0x2dd4bf) }, // teal
   },
   depthTest: false,
   depthWrite: false,
@@ -275,8 +275,8 @@ The SDF hero renders at `renderOrder = -1`, so it always draws before the partic
 | `uSurfaceThreshold` | 0.001 | 0.0005 – 0.005 | Hit distance below which the ray is considered to have struck the surface. Too small = misses at displacement peaks; too large = the surface looks puffy and inset from the true SDF iso-surface. |
 | `uDisplacement` | 0.3 | 0.0 – 0.8 | Amplitude of the sinusoidal warble applied to each sphere. At 0.0 the spheres are clean mathematical spheres; at 0.6+ they start to look like spiky coral. Keep below 0.5 for a shape that reads as organic-but-controlled. |
 | `uRotationSpeed` | 0.2 | 0.0 – 1.0 | Speed of the Y-axis field rotation (radians / second). 0.2 reads as breathing; above 0.6 it reads as spinning and loses the ambient feel. |
-| `uColorA` | `#e66cff` (violet) | TakeTwo accents | The color at low view-angle incidence (front-facing pixels). Swapping `uColorA` and `uColorB` inverts the fresnel ramp — teal on-face, violet on rim. |
-| `uColorB` | `#59ffe2` (teal) | TakeTwo accents | The color at high view-angle incidence (rim/silhouette pixels). The violet → teal transition is the established TakeTwo fresnel cue. |
+| `uColorA` | `#8b5cf6` (violet) | your brand accents | The color at low view-angle incidence (front-facing pixels). Swapping `uColorA` and `uColorB` inverts the fresnel ramp — teal on-face, violet on rim. |
+| `uColorB` | `#2dd4bf` (teal) | your brand accents | The color at high view-angle incidence (rim/silhouette pixels). The violet → teal transition is one studio's established fresnel cue — pick your own pair. |
 
 ## Common pitfalls
 

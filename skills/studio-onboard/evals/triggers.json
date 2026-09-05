@@ -1,11 +1,11 @@
 [
   {"query": "Hey, I just joined the studio — can you onboard me to this repo?", "should_trigger": true},
   {"query": "First time here, where do I start?", "should_trigger": true},
-  {"query": "I'm new to TakeTwo, get me set up and oriented", "should_trigger": true},
+  {"query": "I'm new to this studio, get me set up and oriented", "should_trigger": true},
   {"query": "Just cloned this repo and have no idea what it is — walk me through it", "should_trigger": true},
   {"query": "New engineer on the team, what's the first thing I should know about this project?", "should_trigger": true},
   {"query": "Help me get oriented, I've never worked in this codebase before", "should_trigger": true},
-  {"query": "Can you give me the full onboarding for TakeTwo Studio?", "should_trigger": true},
+  {"query": "Can you give me the full onboarding for this studio repo?", "should_trigger": true},
   {"query": "I'm getting set up on the project for the first time, what do I need to do?", "should_trigger": true},
   {"query": "Onboard me — I want the environment check and the briefing", "should_trigger": true},
   {"query": "What is this repo and how do I get started contributing?", "should_trigger": true},

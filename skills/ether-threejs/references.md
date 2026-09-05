@@ -1,8 +1,8 @@
 # References — Premium WebGL studios, annotated
 
-Studio-by-studio reference list for TakeTwo Media work. Each entry maps a studio to ONE specific observable technique, the technique recipe file that addresses it, and a concrete copy/skip note. Open the screenshot at the listed path before reading the entry — annotations are written from what's visible in those PNGs (captured in Task 5), not from generic agency knowledge.
+Studio-by-studio reference list for premium WebGL work. Each entry maps a studio to ONE specific observable technique, the technique recipe file that addresses it, and a concrete copy/skip note. Open the URL before reading the entry — annotations were written from captures made 2026-04-28, not from generic agency knowledge, and sites change: re-verify before citing.
 
-When the screenshot is unreliable (entry gate, GDPR overlay, wrong site, dead domain), the entry says so. Do not pretend an unreliable capture is ground truth.
+When the capture was unreliable (entry gate, GDPR overlay, wrong site, dead domain), the entry says so. Do not pretend an unreliable capture is ground truth.
 
 Every technique file in `techniques/` is referenced by at least one studio entry below, so you can enter the skill from either direction (studio → technique, or technique → studio that proves it works).
 
@@ -10,7 +10,6 @@ Every technique file in `techniques/` is referenced by at least one studio entry
 
 ### Lusion
 - **URL:** https://lusion.co
-- **Screenshot:** `references/screenshots/lusion.png`
 - **Specific technique demonstrated:** A dense field of identical short-cylinder primitives in two colorways (cobalt blue + matte white + black) tumbling under what reads as soft physics, lit so the matte surfaces catch a single key light and the blacks fall to true black. The composition is a packed cluster — not floating particles — which is the harder problem because intersections must look intentional.
 - **Where to look:** Homepage hero, immediately above the fold. The "SCROLL TO EXPLORE" prompt sits below the cluster.
 - **Related technique file:** `techniques/fresnel-iridescence.md`
@@ -21,7 +20,6 @@ Every technique file in `techniques/` is referenced by at least one studio entry
 
 ### Active Theory
 - **URL:** https://activetheory.net
-- **Screenshot:** `references/screenshots/activetheory.png`
 - **Specific technique demonstrated:** A holographic / chrome logo mark sitting in deep black space with a sparse warm-yellow particle burst trailing downward beneath it, and a faint vertical light streak rising on the left. The logo has visible refraction/double-edge ringing, suggesting a thin-film or fresnel-driven shader on a beveled extrusion rather than a flat SVG.
 - **Where to look:** Homepage landing, the hero logo treatment. The particles are subtle — full-bleed black background is required to see them.
 - **Related technique file:** `techniques/curl-noise-particles.md`
@@ -32,7 +30,6 @@ Every technique file in `techniques/` is referenced by at least one studio entry
 
 ### Resn
 - **URL:** https://resn.co.nz
-- **Screenshot:** `references/screenshots/resn.png`
 - **Specific technique demonstrated:** A single dark refractive/shattered-glass form floating center-frame against near-black, with the studio name and "Est. 2004" centered through the form so the reader sees the type slightly distorted by the geometry in front of it. The shards are large and few — maybe a dozen — not a particle cloud.
 - **Where to look:** Homepage hero, vertically centered. The form rotates slowly; refraction shifts as it turns.
 - **Related technique file:** `techniques/raymarched-sdf-hero.md`
@@ -43,7 +40,6 @@ Every technique file in `techniques/` is referenced by at least one studio entry
 
 ### Zajno
 - **URL:** https://zajno.com
-- **Screenshot:** `references/screenshots/zajno.png`
 - **Specific technique demonstrated:** Massive custom display wordmark ("zajno®") set at hero scale — type is the hero, not a 3D object. Below it, a high-contrast product photograph (camera lens module, three circular elements) is composed as if it were a render but is actually a photo. The page treats type and image as equal-weight composition, with the wordmark approximately 60% of viewport height.
 - **Where to look:** Homepage, top fold. The wordmark is the entire visual anchor.
 - **Related technique file:** `techniques/msdf-typography.md`
@@ -54,8 +50,7 @@ Every technique file in `techniques/` is referenced by at least one studio entry
 
 ### EXP (exp.is)
 - **URL:** https://exp.is
-- **Screenshot:** `references/screenshots/exp.png`
-- **Screenshot caveat:** GDPR cookie banner covers the bottom 20% of the capture. Visible content above the banner is still readable.
+- **Capture caveat:** GDPR cookie banner covers the bottom 20% of the capture. Visible content above the banner is still readable.
 - **Specific technique demonstrated:** Extreme typographic restraint — black hairline type ("EXP." then "is a Full-Cycle Experience Ecosystem") on white, with a single hairline circle outline filling roughly 70% of the viewport height behind the type. The corners use small dash registration marks (like print bleed marks) which cue "engineering / spec sheet" aesthetic without being literal.
 - **Where to look:** Homepage hero, full viewport.
 - **Related technique file:** `techniques/msdf-typography.md`
@@ -66,18 +61,17 @@ Every technique file in `techniques/` is referenced by at least one studio entry
 
 ### Bonhomme
 - **URL (intended):** https://bonhommeparis.com  *(NOT bonhomme.lol — see note)*
-- **Screenshot:** **MISSING** — `references/screenshots/bonhomme.png` captured `bonhomme.lol`, which is a personal developer portfolio (Maxime Bonhomme), not the Bonhomme Paris creative studio. Re-capture against bonhommeparis.com before relying on this entry.
-- **Specific technique demonstrated:** *Cannot annotate without a verified screenshot.* Bonhomme Paris is known publicly for narrative scrollytelling case studies with persistent canvas state across route changes, but do not implement from that reputation alone — re-capture and verify before quoting specifics.
+- **Capture note:** the original capture hit `bonhomme.lol`, a personal developer portfolio, not the Bonhomme Paris studio. Verify against bonhommeparis.com before relying on this entry.
+- **Specific technique demonstrated:** *Cannot annotate without a verified capture.* Bonhomme Paris is known publicly for narrative scrollytelling case studies with persistent canvas state across route changes, but do not implement from that reputation alone — re-capture and verify before quoting specifics.
 - **Where to look:** N/A until re-captured.
 - **Related technique file:** `techniques/persistent-canvas-routing.md`
-- **What to copy:** Defer until the screenshot is corrected. The captured `bonhomme.lol` page (Maxime's portfolio) is a clean dark-mode resume layout — a fine reference for a personal site, but not the studio aesthetic this list targets.
+- **What to copy:** Defer until verified against the right site.
 - **What to skip:** Do NOT cite "Bonhomme" as a reference in client-facing work until the URL confusion is resolved. Two distinct entities share the name.
 
 ---
 
 ### 14islands
 - **URL:** https://14islands.com
-- **Screenshot:** `references/screenshots/14islands.png`
 - **Specific technique demonstrated:** Oversized sans-serif headline ("Design & Technology") set across two lines so each word touches a different edge of the viewport, with a small label cluster ("CREATIVE AGENCY / WE DESIGN AND BUILD...") right-aligned in the negative space. The ampersand is set in a lighter gray than the words it joins — color hierarchy doing what weight hierarchy usually does.
 - **Where to look:** Homepage hero, the type composition under the nav.
 - **Related technique file:** `techniques/scroll-camera-choreography.md`
@@ -88,7 +82,6 @@ Every technique file in `techniques/` is referenced by at least one studio entry
 
 ### Hello Monday
 - **URL:** https://hellomonday.com
-- **Screenshot:** `references/screenshots/hellomonday.png`
 - **Specific technique demonstrated:** A hand-drawn line illustration (two figures, one reading) sits centered above the word "Products" set in a slab serif — illustration plus serif as the hero, then a dark sidebar peeks in from the right edge, and three colored project tiles begin at the bottom edge. The "6 days until Monday" label in the corner is a dated-by-design micro-detail.
 - **Where to look:** Homepage above the fold; the colored tiles below are the project grid entry points.
 - **Related technique file:** `techniques/persistent-canvas-routing.md`
@@ -99,8 +92,7 @@ Every technique file in `techniques/` is referenced by at least one studio entry
 
 ### Akufen
 - **URL:** https://akufen.ca
-- **Screenshot:** `references/screenshots/akufen.png`
-- **Screenshot caveat:** Full GDPR consent panel sits in the bottom-right quadrant. Hero type and project list are still legible.
+- **Capture caveat:** Full GDPR consent panel sits in the bottom-right quadrant. Hero type and project list are still legible.
 - **Specific technique demonstrated:** Hero wordmark "AKFN" set at viewport-spanning scale with extreme letter-spacing — each letter occupies roughly a fifth of the viewport width, with negative space between them as the dominant visual element. Below, a body paragraph treats key terms ("Akufen", "projets", "services") as pill-shaped inline tags, mixing tag UI into running prose.
 - **Where to look:** Homepage hero (the AKFN type) and the introductory paragraph immediately below.
 - **Related technique file:** `techniques/msdf-typography.md`
@@ -111,8 +103,7 @@ Every technique file in `techniques/` is referenced by at least one studio entry
 
 ### Locomotive
 - **URL:** https://locomotive.ca
-- **Screenshot:** `references/screenshots/locomotive.png`
-- **Screenshot caveat:** Cookie consent panel covers the bottom-right quadrant. Hero portrait and footer wordmark are still visible.
+- **Capture caveat:** Cookie consent panel covers the bottom-right quadrant. Hero portrait and footer wordmark are still visible.
 - **Specific technique demonstrated:** A pixelated/mosaic-faced portrait (model wearing dark turtleneck, face deliberately blocked into ~16x16 pixel cells) on a high-saturation cobalt-blue background, with display type ("Locomotive® Digital-first Design Agency") sitting on the same blue field at the bottom edge. The pixelation looks like a real-time post-process pass, not a baked image — the cell grid stays orthogonal to the viewport.
 - **Where to look:** Homepage hero, the portrait module.
 - **Related technique file:** `techniques/postprocessing-chain.md`
@@ -123,8 +114,7 @@ Every technique file in `techniques/` is referenced by at least one studio entry
 
 ### Studio Lumio
 - **URL:** https://studiolumio.com
-- **Screenshot:** `references/screenshots/studiolumio.png`
-- **Screenshot caveat:** Capture only shows the entry gate ("Enter with sound / Enter without sound" on a black field with the wordmark split around the gate). Site content beyond the gate was not captured. Annotations below are limited to what the gate itself demonstrates; do not extrapolate to interior pages.
+- **Capture caveat:** Capture only shows the entry gate ("Enter with sound / Enter without sound" on a black field with the wordmark split around the gate). Site content beyond the gate was not captured. Annotations below are limited to what the gate itself demonstrates; do not extrapolate to interior pages.
 - **Specific technique demonstrated:** The entry gate as a composed object — wordmark "STUDIO" and "LUMIO" set on either side of a centered control panel, all on a near-black field with an acid-yellow (#D7FF3A-ish) action button. Sound-on / sound-off framing makes the audio-driven experience an explicit user choice, not a surprise autoplay.
 - **Where to look:** Homepage on first load, the entry gate before any interior content.
 - **Related technique file:** `techniques/postprocessing-chain.md`
@@ -135,7 +125,6 @@ Every technique file in `techniques/` is referenced by at least one studio entry
 
 ### Ueno
 - **URL:** https://ueno.co
-- **Screenshot:** `references/screenshots/ueno.png`
 - **Specific technique demonstrated:** A grid of four iPhone mockups arranged at three different angles (two upright, two tilted toward camera), each showing a different app screen, sitting on a white background under the line "Hi. We're a strategic design and innovation studio." Type is small, left-aligned, top of viewport — the phones are the hero, not the type.
 - **Where to look:** Homepage hero, the phone grid below the intro line.
 - **Related technique file:** `techniques/scroll-camera-choreography.md`
@@ -146,7 +135,7 @@ Every technique file in `techniques/` is referenced by at least one studio entry
 
 ### Antinomy Studio (DEAD DOMAIN)
 - **URL (attempted):** https://antinomystudio.com — does not resolve as of capture date.
-- **Screenshot:** **UNAVAILABLE** — domain returned no response during Task 5 capture. No `antinomy.png` exists in `references/screenshots/`.
+- **Capture note:** the domain returned no response at capture time (2026-04-28).
 - **Specific technique demonstrated:** Unknown. Studio status unknown — could be relocated to a new domain, sunset, or temporary outage.
 - **Where to look:** N/A.
 - **Related technique file:** `techniques/raymarched-sdf-hero.md` *(tentative — based on prior reputation only; do not cite as evidence)*

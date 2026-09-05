@@ -3,7 +3,7 @@ description: End-of-build flow for client deliverable changes — premium-review
 argument-hint: [optional commit message, otherwise drafted from the diff]
 ---
 
-Run the canonical TakeTwo ship flow. Commit message hint: $ARGUMENTS (otherwise draft one from the diff).
+Run the canonical ship flow. Commit message hint: $ARGUMENTS (otherwise draft one from the diff).
 
 Steps in order — do not skip:
 
@@ -16,10 +16,7 @@ Steps in order — do not skip:
    - [WARN] **Should fix** → list them, ask user to confirm shipping anyway OR pause to fix.
    - [NOTE] **Passed / Optional** → proceed.
 
-4. **Draft commit message** in conventional-commit format (`type(scope): description`). Types: `feat`, `fix`, `polish`, `chore`, `docs`, `refactor`. Keep subject under 72 chars. Add a body if the diff touches >2 files. Always include the co-author footer:
-   ```
-   Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
-   ```
+4. **Draft commit message** in conventional-commit format (`type(scope): description`). Types: `feat`, `fix`, `polish`, `chore`, `docs`, `refactor`. Keep subject under 72 chars. Add a body if the diff touches >2 files. Always include the co-author footer your harness specifies (e.g. `Co-Authored-By: Claude <noreply@anthropic.com>`).
 
 5. **Show the message + diff summary** and ask for explicit confirmation before committing.
 

@@ -4,7 +4,7 @@
 
 Type that lives inside the 3D scene — not overlaid in HTML, not extruded into geometry — and that needs to read as type, not as a 3D model. MSDF is the right choice when the letterforms are compositional elements that respond to camera motion, react to scene lighting through a custom material, or need to render with particles and depth-correct layering in the same draw call budget.
 
-This is the right pattern for: the hero wordmark at viewport scale (TakeTwo brand name on `/`, wordmark-as-subject following the Zajno and Akufen model), type integrated into scroll-driven 3D scenes, labels or callouts inside a WebGL data visualization, any case where you need the text to take a custom shader — glow, scan lines, dissolve into particles.
+This is the right pattern for: the hero wordmark at viewport scale (the studio's wordmark on `/`, wordmark-as-subject following the Zajno and Akufen model), type integrated into scroll-driven 3D scenes, labels or callouts inside a WebGL data visualization, any case where you need the text to take a custom shader — glow, scan lines, dissolve into particles.
 
 This is the wrong pattern for: body text, long-form reading copy, text that needs browser accessibility and selection (use HTML for that), type on a flat card that never enters 3D space (CSS with a web font is lighter and more accessible), anything that can be solved with a `<p>` tag.
 
@@ -30,7 +30,7 @@ npm install troika-three-text troika-three-utils
 
 `troika-three-utils` provides `createDerivedMaterial` — the recommended way to inject custom shader code into a troika text material without breaking troika's internal SDF sampling.
 
-**Font choice — Staatliches for TakeTwo hero type:**
+**Font choice (example: Staatliches, a condensed display face):**
 
 ```
 https://fonts.gstatic.com/s/staatliches/v13/HI_OiY8KO6hCsQSoAPmtMbectJG9O9PS.woff2
@@ -95,7 +95,7 @@ const baseMaterial = new THREE.MeshBasicMaterial({
 // Inject a brand-colored edge glow
 const glowMaterial = createDerivedMaterial(baseMaterial, {
   uniforms: {
-    uGlowColor:    { value: new THREE.Color(0xe66cff) }, // TakeTwo violet
+    uGlowColor:    { value: new THREE.Color(0x8b5cf6) }, // example accent
     uGlowStrength: { value: 1.0 },                        // 0 = no glow, 2 = heavy
   },
   fragmentMainOutro: `
@@ -168,7 +168,7 @@ export async function createHeroText(scene) {
 
   const glowMaterial = createDerivedMaterial(baseMaterial, {
     uniforms: {
-      uGlowColor:    { value: new THREE.Color(0xe66cff) },
+      uGlowColor:    { value: new THREE.Color(0x8b5cf6) },
       uGlowStrength: { value: 1.0 },
     },
     fragmentMainOutro: `
@@ -207,8 +207,8 @@ export async function createHeroText(scene) {
 |---|---|---|---|
 | `fontSize` | (none, required) | 0.1 – 10+ (world units) | Sets the em-square height in three.js world units. 1.0 = 1 unit. Scale to match your camera's field of view — at a typical 75° FOV with camera at z=5, `fontSize: 1.5` produces roughly viewport-spanning hero type. |
 | `sdfGlyphSize` | `64` | 32 / 64 / 128 / 256 | Resolution of the SDF atlas per glyph, in pixels. 64 is correct for body and mid-size display. At hero scale on a 2× or 3× DPR display, the 64px SDF shows soft edges — bump to 128 for hero type. 256 adds almost no visible improvement over 128 except on very large or extremely thin-stroked faces, and costs 4× the VRAM of 128. Must be set before the first `sync()` call; changing it afterward requires a re-sync. |
-| `uGlowStrength` (uniform) | `1.0` | 0.0 – 2.0 | Controls how strongly the edge glow color replaces the base color at glyph edges. 0 = no glow (base color only). 1.0 = full glow blend at the edge. Above 1.5 the glow saturates and starts to read as a bloom artifact rather than an edge treatment — stay below 1.4 for TakeTwo work. |
-| `uGlowColor` (uniform) | `0xe66cff` (violet) | TakeTwo accents | The color mixed into the edge band. TakeTwo cue: violet at hero rest state, animate toward teal `0x59ffe2` on hover or scroll entry. Avoid warm colors against the dark field — the contrast collapse makes the glow disappear. |
+| `uGlowStrength` (uniform) | `1.0` | 0.0 – 2.0 | Controls how strongly the edge glow color replaces the base color at glyph edges. 0 = no glow (base color only). 1.0 = full glow blend at the edge. Above 1.5 the glow saturates and starts to read as a bloom artifact rather than an edge treatment — stay below 1.4 for hero work. |
+| `uGlowColor` (uniform) | `0x8b5cf6` (violet) | your brand accents | The color mixed into the edge band. Example cue: one accent at hero rest state, animate toward a second `0x2dd4bf` on hover or scroll entry. Avoid warm colors against the dark field — the contrast collapse makes the glow disappear. |
 | `letterSpacing` | `0` | −0.5 – 2.0 (em units) | Adds or removes tracking between glyphs, in em units. Positive values open the type; negative values tighten it. At hero scale, `letterSpacing: 0.05` adds a premium display feel without looking editorial-template. Values above 0.3 begin to read like an Akufen-style extreme stretch — intentional there, slop elsewhere. |
 | `lineHeight` | `1.2` | 1.0 – 2.0 | Line height multiplier for multi-line blocks. Only relevant for body-style text blocks in the scene; hero single-line type ignores it. |
 
@@ -218,13 +218,13 @@ export async function createHeroText(scene) {
    `text.sync()` returns a Promise. Troika fetches the font file, parses it, generates the SDF atlas, and lays out the glyphs asynchronously. If you read `text.geometry.boundingBox` or try to center the text using layout values before the Promise resolves, you get null or zero. This is one of the most common bugs when first integrating troika. Pattern: always `await text.sync()` before any code that depends on layout — centering, collision detection, snap-to-grid, anything that reads glyph dimensions. It is safe to add the `Text` to the scene before `sync()` — troika will update the geometry in-place when ready and the object renders as invisible until the atlas is built.
 
 2. **Soft edges on hero type at high DPR — `sdfGlyphSize` too low.**
-   The default `sdfGlyphSize: 64` renders a 64×64 px SDF cell per glyph in the atlas. For body-size type on a standard display this is sharp. For viewport-spanning hero type on a 2× or 3× DPR display, the 64px cell is not enough resolution — the edges look slightly blurred and the stroke weight feels inconsistent. Set `sdfGlyphSize: 128` for any hero-scale `Text` instance. Set it before the first `sync()` call; changing it after the atlas is built requires a new `sync()`. VRAM cost scales quadratically: 128 costs 4× a 64, 256 costs 16×. For TakeTwo work, 128 is the correct default for hero type; leave 64 for body.
+   The default `sdfGlyphSize: 64` renders a 64×64 px SDF cell per glyph in the atlas. For body-size type on a standard display this is sharp. For viewport-spanning hero type on a 2× or 3× DPR display, the 64px cell is not enough resolution — the edges look slightly blurred and the stroke weight feels inconsistent. Set `sdfGlyphSize: 128` for any hero-scale `Text` instance. Set it before the first `sync()` call; changing it after the atlas is built requires a new `sync()`. VRAM cost scales quadratically: 128 costs 4× a 64, 256 costs 16×. For hero type, 128 is the correct default; leave 64 for body.
 
 3. **Depth conflict with particle layers — z-fighting or partial occlusion.**
    Text and particles rendered at similar world-space z values produce z-fighting: the text partially or intermittently disappears behind particle sprites depending on per-frame GPU rasterization order. Two fixes with different tradeoffs:
    - **(a) Always-on-top:** `text.material.depthTest = false; text.renderOrder = 999;` — the text draws last and ignores the depth buffer. Guaranteed visibility from any camera angle. Trade-off: breaks depth correctness (text will render in front of geometry that should occlude it). Use this only for hero type where "type is always legible" is the design intent.
    - **(b) Depth-correct transparent sort:** Keep `depthTest: true` and `transparent: true`. Manually sort particle positions by camera distance each frame and set `renderOrder` accordingly. Correct but adds per-frame JS cost. Use this for scene-integrated labels where depth accuracy matters (data viz, 3D callouts).
-   For TakeTwo hero, default to (a).
+   For a hero wordmark, default to (a).
 
 4. **`createDerivedMaterial` `fragmentMainOutro` timing — modifying `gl_FragColor` before MSDF runs.**
    Troika's MSDF sampling populates `gl_FragColor` (including the critical alpha channel that defines glyph coverage). `fragmentMainOutro` code runs after troika's sampling. Do not attempt to inject code in `fragmentMainIntro` or `vertexMainOutro` to read or modify the MSDF alpha — those run before or during, not after, and `gl_FragColor` is not set yet. If your custom shader needs to key off the glyph edge, it must live in `fragmentMainOutro`. Symptom of getting this wrong: the glow or custom color appears but is not clipped to the glyph shape — the entire quad renders with the effect, not just the letterforms.

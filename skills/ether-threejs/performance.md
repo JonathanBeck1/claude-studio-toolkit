@@ -64,4 +64,4 @@ Premium three.js sites die when they ship laggy mobile. These numbers are non-ne
 - **Spector.js** — browser extension. Captures a single WebGL frame. Inspect every draw call, every shader, every uniform. Indispensable for debugging custom shaders.
 - **stats.js** — drop-in FPS / MS / MB overlay. Add behind a `?stats` query param.
 - **Chrome DevTools Coverage tab** — finds unused JS / CSS that's bloating the bundle.
-- **Lighthouse** — periodic checks for FCP / LCP. Run from CI in Phase 6.
+- **Lighthouse** — periodic checks for FCP / LCP. Run from CI.

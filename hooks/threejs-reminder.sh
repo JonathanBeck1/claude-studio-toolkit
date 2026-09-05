@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # PostToolUse hook for Edit|Write|MultiEdit.
-# When a file under clients/taketwo-media/site/src/scene/ is touched, remind
+# When a file under the scene source is touched (STUDIO_SCENE_GLOB, default
+# */src/scene/*), remind
 # Claude to invoke the ether-threejs slop checklist and run premium-review
 # before reporting complete.
 set -euo pipefail
@@ -15,7 +16,7 @@ print(d.get("tool_input", {}).get("file_path", ""))
 ' 2>/dev/null || true)
 
 case "$file_path" in
-  */clients/taketwo-media/site/src/scene/*)
+  ${STUDIO_SCENE_GLOB:-*/src/scene/*})
     cat <<'EOF'
 [hook:threejs-reminder] Scene file touched. Before reporting complete:
   1. Invoke the `ether-threejs` skill — confirm against the slop checklist.

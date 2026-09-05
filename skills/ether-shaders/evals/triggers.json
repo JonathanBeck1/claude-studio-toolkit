@@ -1,8 +1,8 @@
 [
-  {"query": "I want the TAKETWO hero letters to have that oily iridescent sheen that shifts from violet to teal as you orbit the camera — how do I write the fragment shader for that?", "should_trigger": true},
+  {"query": "I want the HELLO hero letters to have that oily iridescent sheen that shifts from violet to teal as you orbit the camera — how do I write the fragment shader for that?", "should_trigger": true},
   {"query": "Add vertex displacement to the hero sculpture so the surface ripples slightly with a noise function, and keep it cheap enough for mobile", "should_trigger": true},
   {"query": "Set up the bloom + dither postprocessing composer for the home scene the way we do it on the studio site", "should_trigger": true},
-  {"query": "Write a custom ShaderMaterial for the extruded TAKETWO type with a fresnel rim light", "should_trigger": true},
+  {"query": "Write a custom ShaderMaterial for the extruded HELLO type with a fresnel rim light", "should_trigger": true},
   {"query": "How do I extrude the word WEB into 3D type with bevels and give it our brand iridescent material for the services page?", "should_trigger": true},
   {"query": "The fresnel rim on the sculpture is way too strong, I need to tune the rim mix in the fragment shader", "should_trigger": true},
   {"query": "I'm writing a GLSL fragment shader for a new hero and want it to match our premium look — what's our approach for the material?", "should_trigger": true},

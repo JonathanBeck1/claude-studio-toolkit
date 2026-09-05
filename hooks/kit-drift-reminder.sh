@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # PostToolUse hook for Edit|Write|MultiEdit.
-# When a kit source file is touched, remind Claude that the toolkit
-# documents the engine — skills and READMEs silently drift unless
-# synced in the same PR as the API change.
+# When an engine source file is touched (STUDIO_ENGINE_GLOB, default
+# */ether/src/*), remind Claude that the toolkit documents the engine —
+# skills and READMEs silently drift unless synced in the same PR.
 set -euo pipefail
 
 input=$(cat)
@@ -15,14 +15,13 @@ print(d.get("tool_input", {}).get("file_path", ""))
 ' 2>/dev/null || true)
 
 case "$file_path" in
-  */clients/taketwo-media/kit/src/*)
+  ${STUDIO_ENGINE_GLOB:-*/ether/src/*})
     cat <<'EOF'
-[hook:kit-drift-reminder] Kit source touched. If the public surface changed
+[hook:kit-drift-reminder] Engine source touched. If the public surface changed
 (exports, signatures, files moved), sync the docs in the SAME PR:
-  - kit/README.md (API table + config examples)
-  - the matching ether-* skill (SKILL.md + recipes.md file:line cites)
-The kit is public: keep it brand-free, and once the change reaches master
-run scripts/publish-ether.sh to fast-forward github.com/JonathanBeck1/ether.
+  - the engine README (API table + config examples)
+  - the matching ether-* skill (SKILL.md + recipes.md cites)
+If the engine is mirrored publicly, publish after the change lands.
 EOF
     ;;
 esac

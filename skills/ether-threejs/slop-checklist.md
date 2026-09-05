@@ -23,7 +23,7 @@ Every shipped 3D moment must demonstrate ALL of these:
 - [ ] Postprocessing chain — bloom + dither via the kit's composer presets (`createHeroComposer` or `createNightComposer`). Tone mapping belongs only in the hdr/night preset. Library is vanruesc `postprocessing`, never `UnrealBloomPass`.
 - [ ] Camera choreography driven by GSAP timeline OR scroll position via Lenis — never `OrbitControls` for non-product contexts
 - [ ] Geometry is one of: hand-modeled in Blender, procedurally generated (e.g., particle system, raymarched SDF), or a non-primitive imported asset
-- [ ] Brand palette is applied deliberately (one of `#e66cff`, `#59ffe2`, `#ff7d4e` is dominant; another is accent; muted on `#0a0e1a → #161b2f` background)
+- [ ] The brand palette is applied deliberately (one accent dominant, another as counterpoint, muted values on the dark field) — never three.js default colors
 - [ ] Mobile profiling completed — sustained 30+ FPS on a 2-year-old iPhone
 - [ ] Renders correctly with `prefers-reduced-motion` (motion reduced or disabled, not just muted)
 
@@ -32,7 +32,7 @@ Every shipped 3D moment must demonstrate ALL of these:
 Before committing any scene-touching code:
 
 1. Take a screenshot of the rendered scene (1920x1080, default viewport).
-2. Open the screenshot next to a reference screenshot from `references/screenshots/`. If the gap is obvious, redesign.
+2. Open the screenshot next to the closest reference studio's live page (URLs in `references.md`). If the gap is obvious, redesign.
 3. Run through the Reject checklist. If any box ticks, fix before commit.
 4. Run through the Required checklist. If any box does NOT tick, fix before commit.
 5. Profile on Chrome DevTools Performance tab. Confirm 60 FPS on a mid-tier laptop, frame budget under 16ms.

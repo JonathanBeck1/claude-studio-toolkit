@@ -4,7 +4,7 @@
 
 Hero backgrounds where you need 5,000–50,000 particles flowing in a coherent, organic motion field — neither random (chaotic) nor scripted (mechanical). Curl noise produces divergence-free flow, so particles never bunch up or thin out — they drift in continuous streams.
 
-**Reference-only.** Ambient particle fields are a logged owner rejection ("seizure-y" — `brain/design-taste.md`) and a listed slop indicator. Never propose this as a hero atmosphere or background fill — only ever as a deliberate accent around a defined subject.
+**Reference-only.** Ambient particle fields are a logged owner rejection ("seizure-y" was one studio owner's verdict on a real build) and a listed slop indicator. Never propose this as a hero atmosphere or background fill — only ever as a deliberate accent around a defined subject.
 
 This is the wrong pattern for: literal data viz where particle count maps to a value (use simple instanced meshes), explosion / impact effects (use a one-shot animation), narrative path-following (use spline-driven animation).
 
@@ -24,7 +24,7 @@ Update positions in JS each frame, push to a `Float32BufferAttribute`. Simple bu
 
 Store positions in a floating-point texture. Each frame, render a fullscreen quad to a second texture using a fragment shader that reads the current position and writes the next position. Swap textures (ping-pong). Sample the texture in the particle vertex shader to place each point.
 
-For TakeTwo work, default to Path B. Path A is a fallback only.
+For premium studio work, default to Path B. Path A is a fallback only.
 
 ## Code recipe — Path B (GPU-driven)
 

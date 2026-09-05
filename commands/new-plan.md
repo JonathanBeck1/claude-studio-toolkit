@@ -23,7 +23,7 @@ If a file at that path already exists, abort. Suggest appending a `-v2` to the s
 
 **Step 3 — Write the file.**
 
-Write the file with this canonical structure (mirrors `2026-05-27-phase-3-quality-hooks.md`, `2026-05-27-phase-4-technique-skills.md`):
+Write the file with this canonical structure:
 
 ```markdown
 # Phase <PHASE> — <Human-readable title>

@@ -17,7 +17,7 @@ print(d.get("tool_input", {}).get("command", ""))
 case "$cmd" in
   *"git commit"*)
     staged=$(git -C "${CLAUDE_PROJECT_DIR:-.}" diff --cached --name-only 2>/dev/null || true)
-    if printf '%s\n' "$staged" | grep -qE '^clients/taketwo-media/site/src/(scene|components|styles)/'; then
+    if printf '%s\n' "$staged" | grep -qE "${STUDIO_DELIVERABLE_RE:-(^|/)src/(scene|components|styles)/}"; then
       cat <<'EOF'
 [hook:premium-review-reminder] Staged changes touch client deliverable paths.
 Confirm `premium-review` has run since the last code change. If not, abort the

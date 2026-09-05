@@ -1,32 +1,31 @@
 ---
-description: Verify a page or component against TakeTwo Media brand-assets.md — colors, fonts, logo usage.
-argument-hint: [file or URL — defaults to the live site]
+description: Verify a page or component against the repo's brand reference document — colors, fonts, logo usage, voice.
+argument-hint: "[file or URL — defaults to the built site] [path to the brand doc]"
 ---
 
-Audit the target against `clients/taketwo-media/brand-assets.md`. Target: $ARGUMENTS (default to `clients/taketwo-media/site/dist/index.html` or the live site if no argument).
+Audit the target against the brand reference document. Resolve the brand doc in this order: the second argument if given; the path `CLAUDE.md` names as the brand reference; else `brand-assets.md` at the repo root. If none exists, stop and say so — never audit against remembered or assumed colors.
 
-Check each of these and report a pass/fail/observation per item:
+Target: the first argument (default to the built `dist/index.html`, or the live site if the repo names one).
+
+Read the brand doc first and extract: the palette (background, primary / secondary / tertiary accents, muted, text), the type stack (display and body faces, weights), logo rules, and voice adjectives. Then check each item and report pass/fail/observation:
 
 **Color palette compliance**
-- Background gradient uses `#0a0e1a → #161b2f` (or matches the body gradient spec).
-- Primary accent `#e66cff` used for primary brand emphasis.
-- Secondary accent `#59ffe2` used for secondary emphasis.
-- Tertiary accent `#ff7d4e` used sparingly.
-- Muted `#8891aa` for de-emphasized text/borders.
-- Body text `#ffffff` on dark surfaces.
-- Flag any colors that don't appear in the palette and aren't a documented exception.
+- Backgrounds match the documented ground (gradient or solid).
+- Primary accent used for primary emphasis; secondary for secondary; tertiary sparingly.
+- Muted for de-emphasized text and borders; body text color on documented surfaces.
+- Flag any color that isn't in the palette and isn't a documented exception.
 
 **Typography**
-- Display headings use Staatliches.
-- Body uses IBM Plex Sans (weights 400 or 600).
-- No stray system fonts or generic Tailwind defaults.
+- Display headings use the documented display face.
+- Body uses the documented body face at documented weights.
+- No stray system fonts or framework defaults.
 
 **Logo**
-- Wordmark appears on dark backgrounds only (never on light or busy backgrounds).
-- Adequate clear space around the logo.
+- Placed only on the backgrounds the doc allows (e.g. a white wordmark on dark only).
+- Adequate clear space.
 
 **Voice / tone (if there's copy)**
-- Premium, restrained, dimensional craft — not generic agency speak.
+- Matches the documented adjectives — not generic agency speak.
 - No emojis unless explicitly intentional.
 - No AI-listicle phrasing ("unlock", "level up", "game-changer").
 

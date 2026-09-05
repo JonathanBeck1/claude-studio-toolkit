@@ -3,7 +3,7 @@ description: Review three.js / WebGL / shader code in this project against the e
 argument-hint: [file path or directory — defaults to scanning the active site]
 ---
 
-Audit the target three.js code for TakeTwo-quality issues. Target: $ARGUMENTS (default to scanning `clients/taketwo-media/site/src/` for `.ts`, `.js`, `.glsl`, `.vert`, `.frag` files using three.js).
+Audit the target three.js code for premium-quality issues. Target: $ARGUMENTS (default to scanning the project's `src/` for `.ts`, `.js`, `.glsl`, `.vert`, `.frag` files that import three.js).
 
 **Mandatory first step:** invoke the `ether-threejs` skill. The skill contains the slop checklist, vetted recipes, performance budgets, and reusable GLSL snippets. Do not audit from memory or generic three.js knowledge.
 
@@ -11,9 +11,9 @@ Audit the target three.js code for TakeTwo-quality issues. Target: $ARGUMENTS (d
 
 1. **Slop checklist** — default-quality giveaways: stock geometry, basic Lambert/Phong with no postprocessing, default rotation/orbit animation, no DPR clamping, particles for the sake of particles.
 2. **Performance budget** — DPR clamped? Frame budget reasonable? Texture sizes power-of-two and reasonable? Geometry instanced where appropriate?
-3. **Postprocessing** — using the `postprocessing` package (already in dependencies)? Sensible passes only, no kitchen-sink stacks?
-4. **Shaders** — uniforms named meaningfully? GLSL imported via `?raw` (`vite-plugin-glsl` is configured but unused)? No magic numbers without comments explaining the intent?
-5. **Brand-as-form alignment** — does the 3D work *express the brand* (per design-taste memory), or is it generic decoration?
+3. **Postprocessing** — using the `postprocessing` package? Sensible passes only, no kitchen-sink stacks?
+4. **Shaders** — uniforms named meaningfully? GLSL imported via `?raw`? No magic numbers without comments explaining the intent?
+5. **Brand-as-form alignment** — does the 3D work *express the brand*, or is it generic decoration?
 6. **Lenis + GSAP integration** — scroll-driven scenes use Lenis for smooth scroll, GSAP for orchestration. No double-driving from `requestAnimationFrame` + scroll listeners colliding.
 
 **Output format**

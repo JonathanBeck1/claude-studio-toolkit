@@ -4,7 +4,7 @@
 
 Sites where the WebGL canvas is the continuous ambient field the page lives inside — not a section-level decoration that gets mounted and unmounted per route. Use this when: (a) the hero scene should survive navigation (logo, ambient field, or background cloth), (b) route transitions need to feel like a camera move between two spaces rather than a reload, or (c) the GPU scene state — loaded textures, compiled shaders, preloaded audio — is expensive enough that re-initializing it per page visit would produce a visible 200–800ms black frame.
 
-This is the right pattern for: the TakeTwo site itself (one canvas, four route scenes sharing the same renderer), any portfolio site where project pages fly into from the home grid, experience-type sites where the "room" persists and the "content" changes.
+This is the right pattern for: a studio site (one canvas, several route scenes sharing the same renderer), any portfolio site where project pages fly into from the home grid, experience-type sites where the "room" persists and the "content" changes.
 
 This is the wrong pattern for: sites where each page has genuinely different renderer configurations (e.g., one page uses WebXR, another needs a 2D canvas), sites where individual pages are authored by different teams and cannot share a scene contract, cases where the route content is so heavy (large GLTF per page) that the GPU memory benefit of a shared renderer is outweighed by the complexity of scene disposal and re-initialization.
 
@@ -48,7 +48,7 @@ npm install gsap
 ### SceneManager — owns the renderer, manages per-route scene swaps
 
 ```js
-// kit/src/core/SceneManager.ts
+// ether: src/core/SceneManager.ts
 import * as THREE from 'three';
 import gsap from 'gsap';
 
@@ -155,7 +155,7 @@ export class SceneManager {
 `SceneManager` calls `preload`, `enterTransition`, `exitTransition`, `tick`, and `dispose` in that order across a scene's lifetime. All transitions return Promises so `transitionTo` can `await` them in sequence.
 
 ```js
-// site/src/scene/scenes/home/HomeScene.ts
+// your site: src/scene/scenes/home/HomeScene.ts
 import * as THREE from 'three';
 import gsap from 'gsap';
 
@@ -250,7 +250,7 @@ survives every swap). Site code passes a routes map once and never
 touches navigation events:
 
 ```ts
-// site/src/scene/boot.ts — the real consumer
+// your site: src/scene/boot.ts
 import { initSceneRouter } from 'ether/astro';
 
 await initSceneRouter(canvas, {
@@ -307,17 +307,17 @@ return new Promise((resolve) => {
 | `exitTransition` duration | `0.6 s` | 0.2 – 1.0 s | Exit should always be shorter than enter — the user has already decided to leave; don't detain them. A 0.6/0.8 ratio (exit/enter) gives a snappy leave and a weighted arrival. |
 | `ease: 'expo.out'` on enter | `expo.out` | `power2.out`, `expo.out`, `circ.out` | Controls the deceleration curve of the camera arrival. `expo.out` reads as physical (fast then drift to rest). `power2.out` is softer. `circ.out` is sharper and slightly mechanical. |
 | `renderer.setPixelRatio` cap | `2` | 1 – 3 | Capped at 2 to protect mobile GPUs. On a 3× retina display, rendering at 3× pixel ratio produces 2.25× more fragments than 2× — measurable cost for no visible improvement at normal viewing distance. Cap at 1.5 for GPU-heavy scenes. |
-| `powerPreference: 'high-performance'` | `'high-performance'` | `'default'`, `'low-power'`, `'high-performance'` | On dual-GPU machines (MacBooks with discrete + integrated), tells the browser to prefer the discrete GPU. `'default'` often selects the integrated GPU on AC power, halving fill rate. Use `'high-performance'` for TakeTwo hero scenes; only drop to `'low-power'` for ambient backgrounds that don't need full framerate. |
+| `powerPreference: 'high-performance'` | `'high-performance'` | `'default'`, `'low-power'`, `'high-performance'` | On dual-GPU machines (MacBooks with discrete + integrated), tells the browser to prefer the discrete GPU. `'default'` often selects the integrated GPU on AC power, halving fill rate. Use `'high-performance'` for hero scenes; only drop to `'low-power'` for ambient backgrounds that don't need full framerate. |
 
 ## Common pitfalls
 
 1. **Geometries, materials, and textures not disposed on scene change.** WebGL keeps GPU buffers alive until JavaScript releases them via `.dispose()`. After 5–10 route navigations without disposal, GPU memory fills and the browser either kills the tab or drops to a software renderer. The symptom arrives late and is hard to attribute — the site "worked fine" during development because no one navigated more than 3 times. Track every GPU-allocating object in `this.disposables` and call `.dispose()` on each inside `dispose()`. The types that need disposal: `BufferGeometry`, `Material`, `Texture`, `WebGLRenderTarget`, `EffectComposer`. Meshes themselves do not need disposal — only what they reference does. A mesh removed from the scene with `scene.remove(mesh)` does not free its geometry or material.
 
-2. **View Transitions API needs a fallback for older browsers.** Safari before version 18 did not support the View Transitions API. When Astro's `<ViewTransitions />` detects no support, it falls back to a full page navigation — the canvas DOM node is replaced and the renderer loses its context. The persistent-canvas architecture silently breaks: the renderer is initialized from scratch, initialization cost returns, and the first frame after each navigation is black. Detect support before relying on the architecture: `if (!document.startViewTransition) { /* fallback: no transition, full reload */ }`. For TakeTwo's audience (premium-targeting, B2B/creative), requiring modern browsers is acceptable. Do not paper over the fallback by pretending it doesn't exist — a black flash is worse than a plain navigation.
+2. **View Transitions API needs a fallback for older browsers.** Safari before version 18 did not support the View Transitions API. When Astro's `<ViewTransitions />` detects no support, it falls back to a full page navigation — the canvas DOM node is replaced and the renderer loses its context. The persistent-canvas architecture silently breaks: the renderer is initialized from scratch, initialization cost returns, and the first frame after each navigation is black. Detect support before relying on the architecture: `if (!document.startViewTransition) { /* fallback: no transition, full reload */ }`. For a premium-targeting B2B/creative audience, requiring modern browsers is acceptable. Do not paper over the fallback by pretending it doesn't exist — a black flash is worse than a plain navigation.
 
 3. **Stale ScrollTriggers across navigation — solved structurally, not with `ScrollTrigger.refresh()`.** In the shipped design no trigger ever outlives its scene: the outgoing scene kills its own triggers synchronously in `exitTransition` (inside the before-swap dispatch, ahead of the DOM mutation and scroll reset), and the incoming scene creates its triggers only AFTER its intro completes, measuring the already-settled new DOM (the ether-scroll triggers-after-intro rule). There is never a stale trigger to refresh. A global `refresh()` on navigation is only needed if a trigger outlives its scene — which is itself the bug to fix.
 
-4. **Canvas does not resize correctly when viewport changes during a transition.** The `handleResize` handler fires immediately on `resize`, but if a scene swap is in progress — `exitTransition` is awaited, `dispose` runs, `preload` runs, `enterTransition` starts — the `activeScene` is in an intermediate state. Calling `this.activeScene.camera.aspect = w / h` mid-swap may set the aspect on a scene that is already disposed or not yet the active one. Two options: (a) queue the resize event and apply it after `transitionTo` resolves (cleaner for hero scenes), or (b) apply immediately and accept a single-frame glitch if the user happens to resize during the 800ms transition window. For TakeTwo's hero scenes, option (a) is preferred — add a `this.pendingResize` flag and flush it at the end of `transitionTo`.
+4. **Canvas does not resize correctly when viewport changes during a transition.** The `handleResize` handler fires immediately on `resize`, but if a scene swap is in progress — `exitTransition` is awaited, `dispose` runs, `preload` runs, `enterTransition` starts — the `activeScene` is in an intermediate state. Calling `this.activeScene.camera.aspect = w / h` mid-swap may set the aspect on a scene that is already disposed or not yet the active one. Two options: (a) queue the resize event and apply it after `transitionTo` resolves (cleaner for hero scenes), or (b) apply immediately and accept a single-frame glitch if the user happens to resize during the 800ms transition window. For hero scenes, option (a) is preferred — add a `this.pendingResize` flag and flush it at the end of `transitionTo`.
 
 5. **Multiple navigation listeners accumulate.** If a navigation `addEventListener` call lives inside a component `<script>` re-evaluated after each swap, each navigation adds one more listener and scene transitions multiply per hop — race condition, GPU memory leak, or runtime error depending on timing. The shipped kit handles this inside `initSceneRouter`: the single-flight init guard means one manager per canvas, the manager registers exactly one persistent `astro:before-swap` listener, and `beforeunload` cleanup removes it. Only hand-rolled routers need the module-scope / body-dataset guard patterns.
 

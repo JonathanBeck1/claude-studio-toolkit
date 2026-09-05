@@ -4,7 +4,7 @@
 
 Pages where the 3D scene is the narrative — not a background decoration — and the user's scroll position is the editorial timeline. Camera choreography is the right pattern when: (a) there are 2–5 distinct "beats" the scene must hit as the user reads through the page, (b) those beats need to feel authored (not just zoom in/out), and (c) the user should never be surprised by a cut — the transition between camera positions should always feel proportional to how fast they scroll.
 
-This is the right pattern for: the TakeTwo homepage hero sequence where the product story unfolds over four scroll sections, case-study covers where the 3D object rotates to reveal a back-panel detail as the user scrolls past the fold, any page where the camera path is the user's journey through a product or concept.
+This is the right pattern for: a homepage hero sequence where the product story unfolds over four scroll sections, case-study covers where the 3D object rotates to reveal a back-panel detail as the user scrolls past the fold, any page where the camera path is the user's journey through a product or concept.
 
 This is the wrong pattern for: ambient hero scenes where the camera should orbit slowly on its own and scroll is irrelevant (use a time-driven `requestAnimationFrame` rotation instead), pages with very long bodies of text where pinning the canvas would trap the user in an unresponsive scroll experience, any context where the user expects native scroll momentum behavior and smooth-scroll inertia would feel disorienting (utility pages, article bodies, docs).
 
@@ -329,6 +329,6 @@ Note: `camera.lookAt()` is called inside the `onUpdate` callback of each timelin
 
 See `references.md`:
 
-- **14islands** entry: Homepage hero sets an oversized "Design & Technology" headline against a near-white field, edge-anchored so each word touches a different viewport edge. The annotation specifically calls out that type composition should come first, with the camera path keyed to the type layout — not the reverse. For TakeTwo work: art-direct the four `cameraPath` keyframes so each beat frames the 3D object in a way that complements whatever HTML copy sits in that scroll section. The camera serves the message, not the other way around.
+- **14islands** entry: Homepage hero sets an oversized "Design & Technology" headline against a near-white field, edge-anchored so each word touches a different viewport edge. The annotation specifically calls out that type composition should come first, with the camera path keyed to the type layout — not the reverse. For premium work: art-direct the four `cameraPath` keyframes so each beat frames the 3D object in a way that complements whatever HTML copy sits in that scroll section. The camera serves the message, not the other way around.
 
 - **Ueno** entry: A grid of iPhone mockups at three different angles, where the angle differential per device is what sells physical presence. On scroll, those angles interpolate. What to copy: the principle that authored angle variation (not just zoom or dolly) is what makes scroll-driven camera feel cinematic. Each `cameraPath` keyframe should have a meaningfully different viewing angle — avoid keyframes that differ only in z-position, which produces a tunnel-vision dolly and nothing else.

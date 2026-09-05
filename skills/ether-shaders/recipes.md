@@ -1,59 +1,51 @@
-# TakeTwo Shaders — Technique Recipes
+# Shaders — Technique Recipes
 
-Reference Claude reads when `ether-shaders` is invoked. Each recipe cites real `file:line` from the kit + site so it ages with the codebase.
+Reference Claude reads when `ether-shaders` is invoked. Engine cites are ether repo paths (`src/...`). The site-side recipes (§3, §4) describe the pattern a production hero material uses; that shader is private, so the snippets are illustrative skeletons with the tuning left to you, not copies.
 
-**Kit vs site boundary (read first):**
-- **Kit owns** (`clients/taketwo-media/kit/src/`): `DitherEffect`, `createHeroComposer`, `ShaderQuad` (backdrop primitive), `extrudedWord` (text pipeline). These are brand-agnostic — any future client can pull them.
-- **Site owns** (`clients/taketwo-media/site/src/shaders/hero/`): `sculpture.vert.glsl` (iridescent fresnel + cheap-noise displacement), `sculpture.frag.glsl`, `caustics.{vert,frag}.glsl`. Brand-specific to TakeTwo. Don't promote to kit without a generalization pass (uniform-driven color palette, etc.).
+**Engine vs site boundary (read first):**
+- **Engine owns** (`src/`): `DitherEffect`, `createHeroComposer` / `createNightComposer`, `ShaderQuad` (backdrop primitive), `extrudedWord` (text pipeline). Brand-agnostic.
+- **Your site owns** (`src/shaders/<scene>/`): the hero material (fresnel rim + displacement) and backdrop shaders. Brand identity lives here. Don't promote to the engine without a generalization pass (uniform-driven palette, etc.).
 
-**GLSL is imported via `?raw`** everywhere in the codebase. `vite-plugin-glsl` is configured in `astro.config.ts:7-12` but never used in practice. Use `?raw`, match the existing pattern.
+**GLSL is imported via `?raw`** everywhere. Match that pattern even if `vite-plugin-glsl` is configured.
 
 ---
 
-## 1. Hero composer preset — bloom + dither (`kit/src/postfx/heroComposer.ts:37-62`)
+## 1. Hero composer preset — bloom + dither (`src/postfx/heroComposer.ts`)
 
 ```ts
-export function createHeroComposer(
-  renderer: THREE.WebGLRenderer,
-  scene: THREE.Scene,
-  camera: THREE.Camera,
-  options: HeroComposerOptions = {},
-): EffectComposer {
-  const { enableDither = true } = options;
-  const composer = new EffectComposer(renderer);
-
+export function createHeroComposer(renderer, scene, camera, options: HeroComposerOptions = {}): HeroComposer {
+  const { enableDither = true, multisampling = 0 } = options;
+  const composer = new EffectComposer(renderer, { multisampling });
   composer.addPass(new RenderPass(scene, camera));
 
   const bloom = new BloomEffect({
     intensity: 0.06,             // restrained — bloom is sensed, not seen
-    luminanceThreshold: 0.65,    // only the violet text core triggers it
+    luminanceThreshold: 0.65,    // only the bright accent core triggers it
     luminanceSmoothing: 0.2,
     mipmapBlur: true,
     kernelSize: KernelSize.MEDIUM,
   });
 
-  const effects: Effect[] = [bloom];
-  if (enableDither) effects.push(new DitherEffect());
-
-  composer.addPass(new EffectPass(camera, ...effects));
-  return composer;
+  const dither = enableDither ? new DitherEffect() : undefined;
+  composer.addPass(new EffectPass(camera, ...(dither ? [bloom, dither] : [bloom])));
+  return { composer, bloom, dither };
 }
 ```
 
 Key facts:
-- **LDR composer (no `frameBufferType: HalfFloatType`).** Values clip at 1.0 deliberately — this is the bloom containment strategy. Without it bloom blooms forever and you need a `ToneMappingEffect` pass to rein it in. See comment at `heroComposer.ts:23-25`.
-- **Bloom intensity `0.06` is the ceiling.** Higher reads as glow-spam. If you need more visible bloom, raise `luminanceThreshold` to gate it harder, not `intensity`.
-- **Quality-tier wiring:** LOW skips the composer entirely (`SceneManager` falls back to `renderer.render(scene, camera)` when `scene.composer` is undefined). MID passes `{ enableDither: false }`. HIGH uses defaults. See `heroComposer.ts:26-35`.
-- **Don't parameterize beyond recognition.** Comment at `:27-29` is policy: if you need a different mood, write a second preset. Don't grow this function into a config zoo.
+- **LDR composer (no `frameBufferType: HalfFloatType`).** Values clip at 1.0 deliberately — this is the bloom containment strategy. `createNightComposer` is the HDR variant (`hdr: true` → half-float buffers + ACES tone mapping) for scenes whose light IS emissive geometry.
+- **Bloom intensity `0.06` is the ceiling** for the hero preset. Higher reads as glow-spam. If you need more visible bloom, raise `luminanceThreshold` to gate it harder, not `intensity`.
+- **Quality-tier wiring:** every tier runs the composer; the per-tier differences live in the quality profile. Pass `{ enableDither: quality.enableDither, multisampling: quality.msaaSamples }` — composer MSAA is the antialiasing that actually reaches the screen once passes render to textures.
+- **Don't parameterize beyond recognition.** If you need a different mood, write a second preset. Don't grow this function into a config zoo.
+- **Returns `{ composer, bloom, dither }`** so a tweaks panel can bind `bloom.intensity` live.
 
-**When to use:** any dark TakeTwo scene with a single bright accent color that needs the felt-not-seen bloom + grain. New clients with different aesthetics get their own composer preset.
+**When to use:** any dark scene with a single bright accent that needs the felt-not-seen bloom + grain. Different aesthetics get their own preset.
 
 ---
 
-## 2. Dither effect — 8×8 Bayer (`kit/src/postfx/DitherEffect.ts`, `kit/src/shaders/dither.glsl`)
+## 2. Dither effect — 8×8 Bayer (`src/postfx/DitherEffect.ts`, `src/shaders/dither.glsl`)
 
 ```ts
-// kit/src/postfx/DitherEffect.ts
 import { Effect, BlendFunction } from 'postprocessing';
 import dither from '../shaders/dither.glsl?raw';
 
@@ -72,147 +64,134 @@ export class DitherEffect extends Effect {
 }
 ```
 
-The shader at `kit/src/shaders/dither.glsl` provides `float dither8x8(vec2 fragCoord)` returning 0..1 from an 8×8 Bayer matrix. The effect adds `(d - 0.5) / 64.0` to each color channel — a barely-perceptible perturbation that breaks up gradient banding without producing visible texture noise.
+`src/shaders/dither.glsl` provides `float dither8x8(vec2 fragCoord)` returning 0..1 from an 8×8 Bayer matrix. The effect adds `(d - 0.5) / 64.0` to each color channel — a barely-perceptible perturbation that breaks up gradient banding without producing visible texture noise.
 
 **When to use:**
-- Dark gradients (the TakeTwo navy backdrop is the canonical case).
+- Dark gradients (a navy backdrop is the canonical case).
 - Any scene with banding visible on smooth color transitions.
+- Every quality tier — it merges into bloom's fullscreen pass, so it is effectively free.
 
 **When NOT to use:**
 - Already-noisy content (caustics, particles, displacement-heavy shaders). Adding dither on top is a free pass with no benefit.
-- LOW tier (skip the dither pass to save the extra fullscreen blit).
 - HDR composers (the `/ 64.0` constant is calibrated for LDR clipping).
 
-**The `?raw` import** is the canonical pattern. `vite-plugin-glsl` is configured but every consumer uses `?raw` directly. Don't switch styles mid-codebase.
+---
+
+## 3. Iridescent fresnel rim material — pattern (site-owned)
+
+The "dimensional type with iridescent rim" treatment, as a pattern. Tune the constants yourself against your renders; the values that make a given brand read are part of that brand's shader.
+
+```glsl
+precision highp float;
+
+uniform vec3 uColorBase, uColorRimA, uColorRimB, uColorAccent;
+uniform float uFresnelExp;   // rim sharpness — a uniform so portrait can widen it
+uniform float uAlpha;        // scroll-driven master alpha (material: transparent = true)
+
+varying vec3 vNormal;
+varying vec3 vViewDir;
+
+void main() {
+  vec3 N = normalize(vNormal);
+  if (!gl_FrontFacing) N = -N;               // light the inside of letters correctly
+  vec3 V = normalize(vViewDir);
+
+  // Two lights: a warm key plus a dimmer cool fill so back-facing slabs never go dead-black.
+  float lambert = max(dot(N, KEY_DIR), 0.0) + max(dot(N, FILL_DIR), 0.0) * FILL_STRENGTH;
+
+  // Grazing-angle rim, exponent-shaped.
+  float fresnel = pow(1.0 - max(dot(N, V), 0.0), uFresnelExp);
+
+  // Dual-color rim by surface orientation — up-facing tilts one accent, down-facing the other.
+  vec3 rim = mix(uColorRimA, uColorRimB, smoothstep(-0.3, 0.6, N.y));
+
+  vec3 base = uColorBase * AMBIENT + uColorBase * lambert * KEY_GAIN
+            + uColorAccent * ACCENT_GAIN * smoothstep(ACCENT_LO, 1.0, lambert);
+
+  // Cap the rim mix well below 1.0 so it accents the silhouette instead of replacing the body.
+  gl_FragColor = vec4(mix(base, rim, fresnel * RIM_CAP), uAlpha);
+}
+```
+
+Principles:
+- **Two lights, not one.** A single directional light produces a flat read on extruded type; a dim cool fill gives sculptural depth without fighting the rim.
+- **Uniform-driven fresnel exponent.** High on desktop confines the rim to truly grazing angles and avoids the "ghost letter" read where lit bevels register as a second glyph; lower in portrait so the rim stays visible at small pixel-per-letter sizes.
+- **Dual-color rim by normal Y.** A single-color rim reads as chroma-key, not iridescence.
+- **Cap the rim mix.** Past roughly half, the rim overwrites the base and the type loses its body — it starts to read as a separate object floating in front.
+- **`uAlpha` for scroll-driven fade,** driven by a ScrollTrigger (see `ether-scroll` §5), with `transparent: true` on the material.
+- **Colors arrive as uniforms** from the site's constants module — never hardcoded vec3s.
+
+**When to use:** dimensional brand-as-form treatments — the brand mark itself as the hero subject. The same material on a generic word reads as a copy; brand-as-form works when the subject IS the brand.
 
 ---
 
-## 3. Iridescent fresnel fragment shader (`site/src/shaders/hero/sculpture.frag.glsl`)
-
-Site-owned. TakeTwo-specific. Canonical reference for "dimensional type with iridescent rim" — the v4 hero treatment that landed.
-
-Key passages:
-
-**Two-light Lambert** (`:51-54`):
-```glsl
-vec3 keyDir  = normalize(vec3( 0.5,  1.0,  0.6));
-vec3 fillDir = normalize(vec3(-0.6, -0.3,  0.4));
-float lambert = max(dot(N, keyDir), 0.0)
-              + max(dot(N, fillDir), 0.0) * 0.35;
-```
-
-Warm key from upper-right + cool fill from lower-left at 35%. Stops back-facing slabs from going dead-flat black. Single directional light produces a flat read on extruded type — two-light gives it sculptural depth without fighting the fresnel rim.
-
-**Uniform-driven fresnel exponent** (`:60`):
-```glsl
-float fresnel = pow(1.0 - max(dot(N, V), 0.0), uFresnelExp);
-```
-
-`uFresnelExp` is a uniform (not a constant) so portrait scenes can widen the rim. Desktop default `5.0` confines rim to truly grazing angles. Portrait drops to `~2.5` so rim covers more surface and stays visible at smaller pixel-per-letter sizes. Comment at `:30-34, :56-59` is the calibration log.
-
-**Rim color mix by normal Y** (`:72`):
-```glsl
-vec3 rim = mix(uColorRimA, uColorRimB, smoothstep(-0.3, 0.6, N.y));
-```
-
-Up-facing normals tilt violet (`uColorRimA`), down-facing tilt teal (`uColorRimB`). The `smoothstep(-0.3, 0.6, N.y)` window gives a gradual rather than hard transition. Brand-token-driven — change the palette in `scene/constants.ts` AND `styles/global.css` (mirrored), not in the shader.
-
-**Final mix capped at 60% fresnel** (`:73`):
-```glsl
-vec3 color = mix(base, rim, fresnel * 0.6);
-```
-
-Even at full grazing angle, the rim is only 60% of the final color. Above that the rim overwrites the base and the type loses its sculptural body. 60% accents the silhouette; higher feels like a separate object floating in front.
-
-**`uAlpha` for scroll-driven fade** (`:75`):
-```glsl
-gl_FragColor = vec4(color, uAlpha);
-```
-
-Driven by the canvas-dim ScrollTrigger (`HomeScene.ts:401-412`). Material has `transparent: true` set in `HeroSculpture.ts`. See `ether-scroll` recipes §5 for the trigger pattern.
-
-**When to use:** dimensional brand-as-form treatments (hero sculptures, service-as-form chapter heads). Generalize the color palette to uniforms if porting to a future scene.
-
----
-
-## 4. Cheap-noise vertex displacement (`site/src/shaders/hero/sculpture.vert.glsl`)
+## 4. Cheap-noise vertex displacement — pattern (site-owned)
 
 ```glsl
+uniform float uTime, uDisplacement, uPointerWarp;
+uniform vec2 uPointer;
+
 float cheapNoise(vec3 p) {
-  return sin(p.x * 1.7 + uTime * 0.3)
-       * sin(p.y * 1.9 - uTime * 0.2)
-       * sin(p.z * 2.1 + uTime * 0.25);
+  return sin(p.x * FX + uTime * TX) * sin(p.y * FY - uTime * TY) * sin(p.z * FZ + uTime * TZ);
 }
 
 void main() {
-  vec3 displaced = position;
+  // Pointer proximity in a screen-ish projection boosts displacement locally.
+  vec2 screenP = position.xy / max(abs(position.z) + DEPTH_BIAS, 0.5);
+  float pointerProx = exp(-length(screenP - uPointer * POINTER_SCALE) * FALLOFF);
+  float local = uDisplacement * (1.0 + pointerProx * uPointerWarp * WARP_GAIN);
 
-  vec2 screenP = position.xy / max(abs(position.z) + 1.5, 0.5);
-  float pointerProx = exp(-length(screenP - uPointer * 1.2) * 1.2);
-  float local = uDisplacement * (1.0 + pointerProx * uPointerWarp * 2.0);
-
-  float n = cheapNoise(position * 1.6) * local;
-  displaced += normal * n * 0.14;
-  // ...
+  vec3 displaced = position + normal * cheapNoise(position * FREQ) * local * CEILING;
+  // ... project as usual
 }
 ```
 
-Key facts:
-- **Sin-based, not 3D curl noise.** Mobile perf budget. Curl noise is ~10× more expensive per vertex. Sin produces a similar visual quality for surface breathing.
-- **The `0.14` multiplier** at `:42` is the displacement ceiling. Was `0.18` pre-polish — comment at `:40-41` is the log. Bevels read crisp at `0.14`; at `0.18` they blur.
-- **Pointer-proximity boost** (`:33-37`) adds local displacement where the cursor is. Falloff via screen-space `exp(-length * 1.2)`. Multiplied through `uPointerWarp` (currently `1.0`, not exposed for tweaking).
-- **`uDisplacement` ramps** from `INTRO_DISPLACEMENT` during the chaos animation to `FINAL_DISPLACEMENT` once assembled. Constants in `scene/constants.ts`. Drives the dispersal-to-form transition.
-
-**When to use:** any dimensional brand-as-form treatment that needs subtle "breathing" without blurring the form itself. Tune the multiplier ceiling per scene — never higher than 0.2 on letter-extrusion geometry.
+Principles:
+- **Sin-based, not 3D curl noise.** Mobile perf budget: roughly an order of magnitude cheaper per vertex, and a similar read for surface "breathing".
+- **A displacement ceiling.** Find the value where bevels still read crisp; past it they blur. When you change it, log the old and new numbers in a comment.
+- **Pointer-proximity boost** — influence felt more than seen; the form never visibly chases the cursor.
+- **`uDisplacement` ramps** from an intro value to a rest value — this drives the dispersal-to-form transition; keep both in the constants module.
 
 ---
 
-## 5. ExtrudedWord text pipeline (`kit/src/text/extrudedWord.ts`)
+## 5. ExtrudedWord text pipeline (`src/text/extrudedWord.ts`)
 
 ```ts
 import { extrudedWord } from 'ether/text';
 
-const result = extrudedWord('TAKETWO', {
-  fontUrl: '/fonts/Staatliches-Regular.ttf',
-  depth: 16,
-  bevelEnabled: true,
-  bevelThickness: 1.2,
-  bevelSize: 0.8,
-  bevelSegments: 8,
-  curveSegments: 10,
+const letters = await extrudedWord('HELLO', '/fonts/display.ttf', {
+  fontSize: 100,          // opentype path-coordinate size (default 100)
+  capHeightRatio: 0.7,    // cap height / em for the face
+  targetCapHeight: 1,     // world units the cap height should occupy
+  extrude: { depth: 16, bevelEnabled: true, bevelThickness: 1.2, bevelSize: 0.8, bevelSegments: 8, curveSegments: 10 },
 });
+
+for (const l of letters) {
+  // l.char, l.geometry (ExtrudeGeometry), l.assembledPosition, l.assembledScale
+}
 ```
 
-Three-pass pipeline (`extrudedWord.ts:95-198`):
-1. Build per-glyph extrusions (`:127-151`) — opentype loads the TTF, converts each glyph to SVG path, SVGLoader handles glyph holes (counters in 'O', 'A'), ExtrudeGeometry produces the mesh.
-2. Compute word bbox (`:155-168`).
-3. Centre + flip Y (TTF coords are Y-up, three.js is Y-up but glyph paths invert) + record per-letter `assembledPosition` / `assembledScale` for animation choreography (`:173-195`).
+Three-pass pipeline:
+1. Per-glyph extrusions — opentype loads the TTF (or takes a loaded `Font`), converts each glyph to an SVG path, `SVGLoader` handles glyph holes (counters in O, A), `ExtrudeGeometry` produces the mesh.
+2. Word bounding box.
+3. Centre + flip + record per-letter `assembledPosition` / `assembledScale` for animation choreography.
 
-**Defaults** (`extrudedWord.ts:50-58`):
-- `depth: 16` — extrusion depth in world units.
-- `bevelEnabled: true, bevelThickness: 1.2, bevelSize: 0.8, bevelSegments: 8` — 8-segment bevel gives smooth shading without exploding the polygon count.
-- `curveSegments: 10` — glyph curve resolution. Lower (4-6) for performance, higher (16+) for hero-tier display.
+**Defaults:** `depth: 16`; `bevelEnabled: true, bevelThickness: 1.2, bevelSize: 0.8, bevelSegments: 8` — an 8-segment bevel gives smooth shading without exploding the polygon count; `curveSegments: 10` — lower (4–6) for performance, higher (16+) for hero-tier display.
 
-**Per-letter handles** for animation:
-- `result.letters[i].assembledPosition` — where the letter sits when the word is assembled. Use as the target for intro reveal.
-- `result.letters[i].assembledScale` — final scale at assembled state.
-- Each letter is its own mesh — can be animated independently.
+**Per-letter handles** for animation: each letter is its own geometry — use `assembledPosition` as the intro's target pose and animate letters independently.
 
-**MSDF not yet in the kit.** Roadmap is `troika-three-text` at `kit/README.md:133`. Until then, `extrudedWord` is the canonical text path. Don't reach for an MSDF library mid-feature — that's a kit-level decision.
+**MSDF is not in the engine.** For crisp flat type at viewport scale see the `msdf-typography` technique in `ether-threejs`. `extrudedWord` is the dimensional-type path.
 
-**When to use:**
-- Hero: brand-as-form (`TAKETWO`).
-- Brand-as-form is the HOME page's identity only — the owner rejected extruded-type reuse on service pages (see memory `feedback_design_taste`).
-- Section titles where dimensional type sells the premium frame.
+**When to use:** hero brand-as-form; section titles where dimensional type sells the premium frame.
 
 **When NOT to use:**
 - Body copy. Use HTML + CSS.
 - Anything that needs to wrap. ExtrudeGeometry doesn't.
-- Anything that needs to be screen-reader accessible. The DOM stays empty — provide an `aria-label`-bearing wrapper for accessibility.
+- Anything that must be screen-reader accessible without extra work — the DOM stays empty, so provide an `aria-label`-bearing wrapper.
 
 ---
 
-## 6. ShaderQuad backdrop primitive (`kit/src/primitives/ShaderQuad.ts:56-110`)
+## 6. ShaderQuad backdrop primitive (`src/primitives/ShaderQuad.ts`)
 
 ```ts
 import { ShaderQuad } from 'ether/primitives';
@@ -221,18 +200,18 @@ import frag from './my-backdrop.frag.glsl?raw';
 const backdrop = new ShaderQuad({
   fragmentShader: frag,
   uniforms: {
-    uColor: { value: new THREE.Color('#0a0e1a') },
+    uColor: { value: new THREE.Color('#101418') },
   },
 });
 scene.add(backdrop.mesh);
 ```
 
 Key facts:
-- **Geometry:** `PlaneGeometry(50, 32)` at `z=-8`. Big enough to fill viewport at any reasonable FOV.
-- **`renderOrder = -10`, `depthWrite = false`, `depthTest = false`, `frustumCulled = false`.** Always renders first, doesn't write to depth buffer, doesn't cull. The "draw everything behind everything else" pattern.
-- **Auto-wired uniforms:** `uTime` (advances per frame, `:99`) and `uAspect` (viewport width/height, `:104`). Don't declare these manually — `ShaderQuad` handles them.
+- **Geometry:** a large plane behind the scene, big enough to fill the viewport at any reasonable FOV.
+- **`renderOrder = -10`, `depthWrite = false`, `depthTest = false`, `frustumCulled = false`.** Always renders first, never writes depth, never culls — the "draw everything behind everything else" pattern.
+- **Auto-wired uniforms:** `uTime` (advances per frame) and `uAspect` (viewport width/height). Don't declare these manually.
 
-**When to use:** any full-viewport shader backdrop. Caustics, gradients, generative wallpapers. The TakeTwo hero's caustics layer sits on its own class (`HeroCaustics`) but follows this pattern.
+**When to use:** any full-viewport shader backdrop — caustics, gradients, generative wallpapers. A site's caustics layer can wrap this in its own class and follow the same pattern.
 
 **When NOT to use:** anything the user needs to read or interact with (text, buttons, cards). Those are regular meshes with proper depth.
 
@@ -240,62 +219,48 @@ Key facts:
 
 ## 7. New ShaderMaterial — procedure
 
-When adding a new ShaderMaterial to a TakeTwo scene:
-
-1. **Confirm against the slop checklist** in `ether-threejs` skill. Custom shader is the answer to "no MeshBasicMaterial / MeshStandardMaterial on hero elements."
-2. **GLSL files live next to the consumer.** Site-specific shaders go in `site/src/shaders/<scene>/`. Reusable shaders (likely none until a second client) go in `kit/src/shaders/`.
+1. **Confirm against the slop checklist** in `ether-threejs`. A custom shader is the answer to "no MeshBasicMaterial / MeshStandardMaterial on hero elements."
+2. **GLSL files live next to the consumer.** Site-specific shaders go in `src/shaders/<scene>/`. Reusable shaders (likely none until a second consumer) go in the engine's `src/shaders/`.
 3. **Import via `?raw`:** `import frag from './x.frag.glsl?raw'`.
-4. **Wire `uTime` through the scene's tick method** — your tick reads `time` and writes `material.uniforms.uTime.value = time` (or use `tickUniforms` on a wrapping class as `HeroSculpture` does).
-5. **Brand tokens through uniforms.** Pull colors from `scene/constants.ts`, not hardcoded vec3s in the shader. Update `global.css` if the token changes.
-6. **Add `precision highp float;`** at the top of fragment shaders explicitly. three.js prepends it by default but stating it inline makes the intent durable across pipeline changes (`sculpture.frag.glsl:20-23` is the example).
-7. **Test against postprocessing.** If your material relies on values > 1.0, the LDR composer clips them. Either rework to stay in 0..1 (preferred) or skip the hero composer for this scene.
+4. **Wire `uTime` through the scene's tick method** — your tick reads `time` and writes `material.uniforms.uTime.value = time` (or use a `tickUniforms` method on a wrapping class).
+5. **Brand tokens through uniforms.** Pull colors from your constants module, not hardcoded vec3s in the shader. If tokens are mirrored in CSS, update both.
+6. **Add `precision highp float;`** at the top of fragment shaders explicitly.
+7. **Test against postprocessing.** If your material relies on values > 1.0, the LDR composer clips them. Either rework to stay in 0..1 (preferred) or use the night preset.
 
 ---
 
 ## 8. Slop indicators (do not ship)
 
 - `MeshBasicMaterial` or `MeshStandardMaterial` on hero elements.
-- Bloom `intensity > 0.1`.
+- Bloom `intensity > 0.1` on the hero preset.
 - Bloom `luminanceThreshold < 0.5` (whole scene blooms).
-- Hardcoded `vec3(...)` colors in shaders instead of brand-token uniforms.
-- Ambient particle fields (covered by `ether-threejs` and `brain/design-taste.md`).
-- Custom material without `uTime` wired through the manager's tick.
+- Hardcoded `vec3(...)` colors in shaders instead of token uniforms.
+- Ambient particle fields with no narrative function (see `ether-threejs`).
+- Custom material without `uTime` wired through the engine's tick.
 - `dat.gui` left in production builds.
 - `console.log` inside shader hot paths.
 - ExtrudedWord with `curveSegments < 6` on a hero treatment (visible polygon edges on glyph curves).
-- Iridescent rim without the dual-color mix (`uColorRimA` ↔ `uColorRimB` by normal Y) — single-color rim reads as ChromaKey, not iridescence.
-- Promoting `sculpture.{vert,frag}.glsl` to the kit without generalizing the color palette to uniforms.
+- Iridescent rim without the dual-color mix by normal direction — a single-color rim reads as chroma-key, not iridescence.
+- Promoting a site shader to the engine without generalizing the color palette to uniforms.
 
 ---
 
 ## 9. Pitfalls (read before debugging shader issues)
 
-- **Bloom looks blown out / hazy.** LDR composer is at the ceiling. Don't raise `intensity`; raise `luminanceThreshold` to gate harder.
-- **Type ghosts (front face + bevel reading as two letters).** Fresnel exponent too low (rim spreading onto bevel surfaces). Raise `uFresnelExp` toward 5.0. See `sculpture.frag.glsl:30-34`.
-- **Banding on backdrop gradient.** Add `DitherEffect` to the composer. If already present, banding may be on the source gradient — check the actual colors aren't truly close enough to trigger gradient quantization.
-- **Vertex displacement blurs the form.** Multiplier too high. Cap at 0.14 on letter-extrusion geometry; lower on smaller details.
-- **Material doesn't fade on scroll.** Forgot `transparent: true` on the material, OR `uAlpha` uniform isn't wired to the scroll trigger. See `ether-scroll` recipes §5 for the canvas-dim trigger.
-- **`?raw` import returns undefined.** `optimizeDeps.exclude: ['ether']` missing in `astro.config.ts`. Required for the kit's `?raw` consumers to work — without it esbuild pre-bundling chokes on the import syntax.
-- **GLSL changes don't hot-reload.** `vite-plugin-glsl`'s `compress` is `false` in dev (`astro.config.ts:11`) — but you're using `?raw`, which doesn't go through the plugin. HMR works via Vite's normal asset-watch. If broken, the dev server needs a restart.
+- **Bloom looks blown out / hazy.** The LDR composer is at its ceiling. Don't raise `intensity`; raise `luminanceThreshold` to gate harder.
+- **Type ghosts (front face + bevel reading as two letters).** Fresnel exponent too low (rim spreading onto bevel surfaces). Raise `uFresnelExp`.
+- **Banding on the backdrop gradient.** Add `DitherEffect` to the composer. If already present, the banding may be on the source gradient — check the colors aren't so close that quantization is inevitable.
+- **Vertex displacement blurs the form.** Multiplier past the ceiling. Lower it on letter-extrusion geometry; lower still on small details.
+- **Material doesn't fade on scroll.** Forgot `transparent: true` on the material, OR the `uAlpha` uniform isn't wired to the scroll trigger. See `ether-scroll` §5.
+- **`?raw` import returns undefined.** `optimizeDeps.exclude: ['ether']` missing in your Vite/Astro config. Without it esbuild pre-bundling chokes on the import syntax.
+- **GLSL changes don't hot-reload.** `?raw` imports go through Vite's normal asset watch, not `vite-plugin-glsl`. If HMR is stuck, restart the dev server.
 
 ---
 
-## File-line citation index
+## Engine citation index
 
-For grep-friendly verification:
-
-- `clients/taketwo-media/kit/src/postfx/heroComposer.ts:37-62` — composer factory
-- `clients/taketwo-media/kit/src/postfx/heroComposer.ts:48-54` — bloom params
-- `clients/taketwo-media/kit/src/postfx/heroComposer.ts:23-25` — LDR rationale
-- `clients/taketwo-media/kit/src/postfx/DitherEffect.ts:2-10` — dither pass setup
-- `clients/taketwo-media/kit/src/shaders/dither.glsl` — Bayer matrix function
-- `clients/taketwo-media/site/src/shaders/hero/sculpture.frag.glsl:51-54` — two-light Lambert
-- `clients/taketwo-media/site/src/shaders/hero/sculpture.frag.glsl:60` — uniform fresnel exponent
-- `clients/taketwo-media/site/src/shaders/hero/sculpture.frag.glsl:72` — rim color mix
-- `clients/taketwo-media/site/src/shaders/hero/sculpture.frag.glsl:73` — 60% rim cap
-- `clients/taketwo-media/site/src/shaders/hero/sculpture.vert.glsl:24-28` — cheapNoise function
-- `clients/taketwo-media/site/src/shaders/hero/sculpture.vert.glsl:42` — 0.14 multiplier
-- `clients/taketwo-media/kit/src/text/extrudedWord.ts:50-58` — extrude defaults
-- `clients/taketwo-media/kit/src/text/extrudedWord.ts:127-198` — three-pass pipeline
-- `clients/taketwo-media/kit/src/primitives/ShaderQuad.ts:56-110` — backdrop primitive
-- `clients/taketwo-media/kit/README.md:133` — MSDF roadmap (troika-three-text)
+- `src/postfx/heroComposer.ts` — `createHeroComposer` (LDR bloom + dither), `createNightComposer` (HDR/ACES variant)
+- `src/postfx/DitherEffect.ts` — dither pass
+- `src/shaders/dither.glsl` — Bayer matrix function
+- `src/text/extrudedWord.ts` — `extrudedWord(word, fontSource, options)` + `ExtrudedLetter`
+- `src/primitives/ShaderQuad.ts` — backdrop primitive
