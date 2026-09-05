@@ -20,7 +20,9 @@ case "$file_path" in
 [hook:kit-drift-reminder] Kit source touched. If the public surface changed
 (exports, signatures, files moved), sync the docs in the SAME PR:
   - kit/README.md (API table + config examples)
-  - the matching aether-* skill (SKILL.md + recipes.md file:line cites)
+  - the matching ether-* skill (SKILL.md + recipes.md file:line cites)
+The kit is public: keep it brand-free, and once the change reaches master
+run scripts/publish-ether.sh to fast-forward github.com/JonathanBeck1/ether.
 EOF
     ;;
 esac

@@ -17,7 +17,7 @@ if [ "$count" = "4" ]; then
   cat <<'EOF'
 [hook:plan-mode-nudge] You've edited 4 files this session. If this is a
 multi-file change, consider:
-  - Plan mode — write a plan in docs/superpowers/plans/, get approval, execute.
+  - Plan mode — write a plan in docs/plans/, get approval, execute.
   - A git worktree (`using-git-worktrees` skill) for risky work.
 This nudge fires once per session.
 EOF

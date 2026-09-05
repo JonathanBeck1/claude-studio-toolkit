@@ -241,7 +241,7 @@ export class HomeScene {
 
 ### Routing through the kit — `initSceneRouter` (the shipped pattern)
 
-As built, `aether/astro → initSceneRouter` owns ALL of this wiring —
+As built, `ether/astro → initSceneRouter` owns ALL of this wiring —
 route-table registration, route normalization (prod serves `/web/`,
 dev `/web`), initial-route resolution from the address bar, the
 navigation listener, single-flight init guarding against double-boot,
@@ -251,7 +251,7 @@ touches navigation events:
 
 ```ts
 // site/src/scene/boot.ts — the real consumer
-import { initSceneRouter } from 'aether/astro';
+import { initSceneRouter } from 'ether/astro';
 
 await initSceneRouter(canvas, {
   '/': (renderer, quality) => new HomeScene(renderer, quality),
@@ -315,7 +315,7 @@ return new Promise((resolve) => {
 
 2. **View Transitions API needs a fallback for older browsers.** Safari before version 18 did not support the View Transitions API. When Astro's `<ViewTransitions />` detects no support, it falls back to a full page navigation — the canvas DOM node is replaced and the renderer loses its context. The persistent-canvas architecture silently breaks: the renderer is initialized from scratch, initialization cost returns, and the first frame after each navigation is black. Detect support before relying on the architecture: `if (!document.startViewTransition) { /* fallback: no transition, full reload */ }`. For TakeTwo's audience (premium-targeting, B2B/creative), requiring modern browsers is acceptable. Do not paper over the fallback by pretending it doesn't exist — a black flash is worse than a plain navigation.
 
-3. **Stale ScrollTriggers across navigation — solved structurally, not with `ScrollTrigger.refresh()`.** In the shipped design no trigger ever outlives its scene: the outgoing scene kills its own triggers synchronously in `exitTransition` (inside the before-swap dispatch, ahead of the DOM mutation and scroll reset), and the incoming scene creates its triggers only AFTER its intro completes, measuring the already-settled new DOM (the aether-scroll triggers-after-intro rule). There is never a stale trigger to refresh. A global `refresh()` on navigation is only needed if a trigger outlives its scene — which is itself the bug to fix.
+3. **Stale ScrollTriggers across navigation — solved structurally, not with `ScrollTrigger.refresh()`.** In the shipped design no trigger ever outlives its scene: the outgoing scene kills its own triggers synchronously in `exitTransition` (inside the before-swap dispatch, ahead of the DOM mutation and scroll reset), and the incoming scene creates its triggers only AFTER its intro completes, measuring the already-settled new DOM (the ether-scroll triggers-after-intro rule). There is never a stale trigger to refresh. A global `refresh()` on navigation is only needed if a trigger outlives its scene — which is itself the bug to fix.
 
 4. **Canvas does not resize correctly when viewport changes during a transition.** The `handleResize` handler fires immediately on `resize`, but if a scene swap is in progress — `exitTransition` is awaited, `dispose` runs, `preload` runs, `enterTransition` starts — the `activeScene` is in an intermediate state. Calling `this.activeScene.camera.aspect = w / h` mid-swap may set the aspect on a scene that is already disposed or not yet the active one. Two options: (a) queue the resize event and apply it after `transitionTo` resolves (cleaner for hero scenes), or (b) apply immediately and accept a single-frame glitch if the user happens to resize during the 800ms transition window. For TakeTwo's hero scenes, option (a) is preferred — add a `this.pendingResize` flag and flush it at the end of `transitionTo`.
 

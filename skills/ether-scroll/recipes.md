@@ -1,6 +1,6 @@
 # TakeTwo Scroll — Technique Recipes
 
-Reference Claude reads when `aether-scroll` is invoked. Each recipe cites real `file:line` from the kit + site so it ages with the codebase. If a cite drifts, fix it in the same PR that moved the code.
+Reference Claude reads when `ether-scroll` is invoked. Each recipe cites real `file:line` from the kit + site so it ages with the codebase. If a cite drifts, fix it in the same PR that moved the code.
 
 Line-number citations in this file predate large HomeScene refactors and have drifted — trust symbol names and grep, not line numbers.
 
@@ -62,7 +62,7 @@ The kit's `SceneManager.tick` (`kit/src/core/SceneManager.ts:135`) calls `active
 
 ## 4. Progress scrub — `createScrollProgress` (drift `HomeScene.ts:357`, camera `:362`)
 
-The canonical "scroll position drives a per-frame value" shape, exported by `aether/scroll` (`kit/src/scroll/scrollProgress.ts:36`):
+The canonical "scroll position drives a per-frame value" shape, exported by `ether/scroll` (`kit/src/scroll/scrollProgress.ts:36`):
 
 ```ts
 this.driftTrigger = createScrollProgress(
@@ -222,4 +222,4 @@ For grep-friendly verification:
 - `clients/taketwo-media/kit/src/quality/quality.ts:120` — enableSmoothScroll definition
 - `clients/taketwo-media/kit/src/core/SceneManager.ts:135` — manager tick → scene tick (seconds)
 - `clients/taketwo-media/kit/src/astro/router.ts:98-111` — view-transition cleanup hooks
-- `clients/taketwo-media/kit/README.md:60` — aether/scroll API table row
+- `clients/taketwo-media/kit/README.md:60` — ether/scroll API table row

@@ -1,6 +1,6 @@
 # TakeTwo Shaders — Technique Recipes
 
-Reference Claude reads when `aether-shaders` is invoked. Each recipe cites real `file:line` from the kit + site so it ages with the codebase.
+Reference Claude reads when `ether-shaders` is invoked. Each recipe cites real `file:line` from the kit + site so it ages with the codebase.
 
 **Kit vs site boundary (read first):**
 - **Kit owns** (`clients/taketwo-media/kit/src/`): `DitherEffect`, `createHeroComposer`, `ShaderQuad` (backdrop primitive), `extrudedWord` (text pipeline). These are brand-agnostic — any future client can pull them.
@@ -129,7 +129,7 @@ Even at full grazing angle, the rim is only 60% of the final color. Above that t
 gl_FragColor = vec4(color, uAlpha);
 ```
 
-Driven by the canvas-dim ScrollTrigger (`HomeScene.ts:401-412`). Material has `transparent: true` set in `HeroSculpture.ts`. See `aether-scroll` recipes §5 for the trigger pattern.
+Driven by the canvas-dim ScrollTrigger (`HomeScene.ts:401-412`). Material has `transparent: true` set in `HeroSculpture.ts`. See `ether-scroll` recipes §5 for the trigger pattern.
 
 **When to use:** dimensional brand-as-form treatments (hero sculptures, service-as-form chapter heads). Generalize the color palette to uniforms if porting to a future scene.
 
@@ -170,7 +170,7 @@ Key facts:
 ## 5. ExtrudedWord text pipeline (`kit/src/text/extrudedWord.ts`)
 
 ```ts
-import { extrudedWord } from 'aether/text';
+import { extrudedWord } from 'ether/text';
 
 const result = extrudedWord('TAKETWO', {
   fontUrl: '/fonts/Staatliches-Regular.ttf',
@@ -215,7 +215,7 @@ Three-pass pipeline (`extrudedWord.ts:95-198`):
 ## 6. ShaderQuad backdrop primitive (`kit/src/primitives/ShaderQuad.ts:56-110`)
 
 ```ts
-import { ShaderQuad } from 'aether/primitives';
+import { ShaderQuad } from 'ether/primitives';
 import frag from './my-backdrop.frag.glsl?raw';
 
 const backdrop = new ShaderQuad({
@@ -242,7 +242,7 @@ Key facts:
 
 When adding a new ShaderMaterial to a TakeTwo scene:
 
-1. **Confirm against the slop checklist** in `aether-threejs` skill. Custom shader is the answer to "no MeshBasicMaterial / MeshStandardMaterial on hero elements."
+1. **Confirm against the slop checklist** in `ether-threejs` skill. Custom shader is the answer to "no MeshBasicMaterial / MeshStandardMaterial on hero elements."
 2. **GLSL files live next to the consumer.** Site-specific shaders go in `site/src/shaders/<scene>/`. Reusable shaders (likely none until a second client) go in `kit/src/shaders/`.
 3. **Import via `?raw`:** `import frag from './x.frag.glsl?raw'`.
 4. **Wire `uTime` through the scene's tick method** — your tick reads `time` and writes `material.uniforms.uTime.value = time` (or use `tickUniforms` on a wrapping class as `HeroSculpture` does).
@@ -258,7 +258,7 @@ When adding a new ShaderMaterial to a TakeTwo scene:
 - Bloom `intensity > 0.1`.
 - Bloom `luminanceThreshold < 0.5` (whole scene blooms).
 - Hardcoded `vec3(...)` colors in shaders instead of brand-token uniforms.
-- Ambient particle fields (covered by `aether-threejs` and `brain/design-taste.md`).
+- Ambient particle fields (covered by `ether-threejs` and `brain/design-taste.md`).
 - Custom material without `uTime` wired through the manager's tick.
 - `dat.gui` left in production builds.
 - `console.log` inside shader hot paths.
@@ -274,8 +274,8 @@ When adding a new ShaderMaterial to a TakeTwo scene:
 - **Type ghosts (front face + bevel reading as two letters).** Fresnel exponent too low (rim spreading onto bevel surfaces). Raise `uFresnelExp` toward 5.0. See `sculpture.frag.glsl:30-34`.
 - **Banding on backdrop gradient.** Add `DitherEffect` to the composer. If already present, banding may be on the source gradient — check the actual colors aren't truly close enough to trigger gradient quantization.
 - **Vertex displacement blurs the form.** Multiplier too high. Cap at 0.14 on letter-extrusion geometry; lower on smaller details.
-- **Material doesn't fade on scroll.** Forgot `transparent: true` on the material, OR `uAlpha` uniform isn't wired to the scroll trigger. See `aether-scroll` recipes §5 for the canvas-dim trigger.
-- **`?raw` import returns undefined.** `optimizeDeps.exclude: ['aether']` missing in `astro.config.ts`. Required for the kit's `?raw` consumers to work — without it esbuild pre-bundling chokes on the import syntax.
+- **Material doesn't fade on scroll.** Forgot `transparent: true` on the material, OR `uAlpha` uniform isn't wired to the scroll trigger. See `ether-scroll` recipes §5 for the canvas-dim trigger.
+- **`?raw` import returns undefined.** `optimizeDeps.exclude: ['ether']` missing in `astro.config.ts`. Required for the kit's `?raw` consumers to work — without it esbuild pre-bundling chokes on the import syntax.
 - **GLSL changes don't hot-reload.** `vite-plugin-glsl`'s `compress` is `false` in dev (`astro.config.ts:11`) — but you're using `?raw`, which doesn't go through the plugin. HMR works via Vite's normal asset-watch. If broken, the dev server needs a restart.
 
 ---

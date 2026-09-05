@@ -1,11 +1,11 @@
 ---
-description: Review three.js / WebGL / shader code in this project against the aether-threejs skill's slop checklist.
+description: Review three.js / WebGL / shader code in this project against the ether-threejs skill's slop checklist.
 argument-hint: [file path or directory — defaults to scanning the active site]
 ---
 
 Audit the target three.js code for TakeTwo-quality issues. Target: $ARGUMENTS (default to scanning `clients/taketwo-media/site/src/` for `.ts`, `.js`, `.glsl`, `.vert`, `.frag` files using three.js).
 
-**Mandatory first step:** invoke the `aether-threejs` skill. The skill contains the slop checklist, vetted recipes, performance budgets, and reusable GLSL snippets. Do not audit from memory or generic three.js knowledge.
+**Mandatory first step:** invoke the `ether-threejs` skill. The skill contains the slop checklist, vetted recipes, performance budgets, and reusable GLSL snippets. Do not audit from memory or generic three.js knowledge.
 
 **Audit categories** (use the skill's checklist as canonical — these are the headline checks):
 
@@ -34,7 +34,7 @@ Audit the target three.js code for TakeTwo-quality issues. Target: $ARGUMENTS (d
 - ...
 
 ### Skill recipes that would help here
-- [pointers into aether-threejs skill recipes]
+- [pointers into ether-threejs skill recipes]
 ```
 
 Do not modify any files. Report only.

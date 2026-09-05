@@ -1,5 +1,5 @@
 ---
-description: Scaffold a new phase plan file in docs/superpowers/plans/ with the canonical structure.
+description: Scaffold a new phase plan file in docs/plans/ with the canonical structure.
 argument-hint: <phase-number> <slug-with-dashes> (e.g. "6 client-scaffold")
 ---
 
@@ -15,7 +15,7 @@ If the args don't parse, abort with: "Usage: /new-plan <phase-number> <slug-with
 
 Determine the date prefix: today's date in `YYYY-MM-DD` format (use `date +%Y-%m-%d` in bash if uncertain).
 
-Compose the path: `docs/superpowers/plans/<DATE>-phase-<PHASE>-<SLUG>.md`.
+Compose the path: `docs/plans/<DATE>-phase-<PHASE>-<SLUG>.md`.
 
 **Step 2 — Check for collision.**
 

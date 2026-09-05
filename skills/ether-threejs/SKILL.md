@@ -1,15 +1,15 @@
 ---
-name: aether-threejs
-description: Premium three.js technique reference for TakeTwo Media work. Use this skill BEFORE writing any three.js code on TakeTwo Media projects (or any premium-tier deliverable). Contains annotated reference work, vetted technique recipes, reusable GLSL shader snippets, performance budgets, and a slop checklist for self-review. Triggers on: writing three.js code, building WebGL scenes, designing 3D web experiences, scene architecture, geometry strategy, instancing, camera and render-loop setup, performance budgets, scroll-driven 3D, persistent-canvas routing, premium agency-grade WebGL. Do NOT use for non-3D TypeScript, plain DOM/CSS animation, or review-only passes — use the threejs-audit command to critique existing 3D code. For GLSL, fragment/vertex shaders, ShaderMaterial, the iridescent material, vertex displacement, MSDF/extruded 3D text, or the bloom+dither postprocessing composer, use aether-shaders instead.
+name: ether-threejs
+description: Premium three.js technique reference for TakeTwo Media work. Use this skill BEFORE writing any three.js code on TakeTwo Media projects (or any premium-tier deliverable). Contains annotated reference work, vetted technique recipes, reusable GLSL shader snippets, performance budgets, and a slop checklist for self-review. Triggers on: writing three.js code, building WebGL scenes, designing 3D web experiences, scene architecture, geometry strategy, instancing, camera and render-loop setup, performance budgets, scroll-driven 3D, persistent-canvas routing, premium agency-grade WebGL. Do NOT use for non-3D TypeScript, plain DOM/CSS animation, or review-only passes — use the threejs-audit command to critique existing 3D code. For GLSL, fragment/vertex shaders, ShaderMaterial, the iridescent material, vertex displacement, MSDF/extruded 3D text, or the bloom+dither postprocessing composer, use ether-shaders instead.
 ---
 
-# aether-threejs
+# ether-threejs
 
 Persistent technique reference and slop-prevention library for premium three.js work. Built during Phase 0 of the TakeTwo Media site redesign and reusable across all future premium projects.
 
 ## When to use
 
-Invoke this skill before any three.js work on premium-tier deliverables. The skill exists because Claude's default three.js output is generic — torus knots, default materials, no postprocessing — and that output is unacceptable for TakeTwo's positioning. See user memory `feedback_no_three_slop.md`.
+Invoke this skill before any three.js work on premium-tier deliverables. The skill exists because Claude's default three.js output is generic — torus knots, default materials, no postprocessing — and that output is unacceptable for TakeTwo's positioning. See `brain/studio-standards.md`.
 
 ## How to use
 

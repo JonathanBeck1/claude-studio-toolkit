@@ -1,9 +1,9 @@
 ---
-name: aether-scroll
-description: Lenis + GSAP ScrollTrigger bridge for the TakeTwo studio site — now an engine module (aether/scroll exports ScrollBridge + createScrollProgress). Documents the rAF-shared loop, conditional smooth-scroll by quality tier, the canonical trigger patterns (progress-scrub via the kit factory; class-toggle and body-flag inline), and the scroll-progress-to-3D handoff. Triggers on Lenis, ScrollTrigger, smooth scroll, scroll-driven animation, scroll progress, scroll-bound camera, scroll-bound shader uniform, parallax, scroll pinning, scrollytelling, scroll restoration, scroll cue, scroll cascade, persistent canvas + scroll, scroll-driven shader uniform. Do NOT use for non-scroll GSAP timelines, CSS scroll-snap, or basic anchor-link smooth scrolling.
+name: ether-scroll
+description: Lenis + GSAP ScrollTrigger bridge for the TakeTwo studio site — now an engine module (ether/scroll exports ScrollBridge + createScrollProgress). Documents the rAF-shared loop, conditional smooth-scroll by quality tier, the canonical trigger patterns (progress-scrub via the kit factory; class-toggle and body-flag inline), and the scroll-progress-to-3D handoff. Triggers on Lenis, ScrollTrigger, smooth scroll, scroll-driven animation, scroll progress, scroll-bound camera, scroll-bound shader uniform, parallax, scroll pinning, scrollytelling, scroll restoration, scroll cue, scroll cascade, persistent canvas + scroll, scroll-driven shader uniform. Do NOT use for non-scroll GSAP timelines, CSS scroll-snap, or basic anchor-link smooth scrolling.
 ---
 
-# aether-scroll
+# ether-scroll
 
 Technique reference for the Lenis + GSAP ScrollTrigger stack used on TakeTwo Media. Invoke before writing scroll-driven motion on any TakeTwo client deliverable.
 
@@ -33,7 +33,7 @@ Do NOT invoke for:
 - **The `ScrollBridge` is conditional on `quality.enableSmoothScroll`.** Null on LOW tier only — touch now gets the bridge (Lenis `syncTouch` smooths on top of native iOS momentum, the fix for choppy mobile scroll-to-3D; it does NOT hijack scroll). When null, ScrollTrigger falls back to native scroll automatically — don't paper over the null with a fake bridge. Progress scrubs still work without it: `createScrollProgress` registers the plugin itself.
 - **Construct the bridge at `enterTransition` START, never the scene constructor.** Lenis intercepts wheel from the moment it exists but only moves the page when its raf is pumped — and `tick()` only runs once the scene is the manager's activeScene, after preload. A constructor-built bridge eats every wheel event for the whole preload window, then lurches when ticking starts. Native scroll covers input until enter (see `initScrollBridge` in `HomeScene` — the only scene with a scroll bridge).
 - **Triggers born mid-range teleport.** Creation-time `onUpdate` fires with RAW progress — scrub smooths linked animations, not creation. If the user can be scrolled when `setupScrollTrigger` runs (they scrolled during the intro), reset consumers to rest and ease to the live state with a one-shot catch-up tween (`HomeScene.setupScrollTrigger`'s `catchupTween`).
-- **Progress scrubs come from `createScrollProgress` (aether/scroll), not hand-rolled `ScrollTrigger.create`.** Drift and camera both use it (`HomeScene.ts:357`, `:362`). Event-style triggers (class/attr toggles) stay inline — brand-specific DOM hooks.
+- **Progress scrubs come from `createScrollProgress` (ether/scroll), not hand-rolled `ScrollTrigger.create`.** Drift and camera both use it (`HomeScene.ts:357`, `:362`). Event-style triggers (class/attr toggles) stay inline — brand-specific DOM hooks.
 - **ScrollTriggers go through `setupScrollTrigger()`,** called from intro `onComplete`, not from the constructor and not from `preload()`. Triggers measure layout at construction time; create them after the intro has finished modifying layout.
 - **`history.scrollRestoration = 'manual'` lives inline-head** in `Layout.astro:41-43`. Do not move it to a module script. Do not remove it. Without it, mid-scroll reloads cause `onUpdate(>0)` to fire on first render and snap state mid-animation.
 - **Every trigger you create has a paired `.kill()` in dispose** (and the bridge a `.destroy()`). Same commit. View transitions (`transition:persist`) ghost old triggers if you skip this.
@@ -44,7 +44,7 @@ Do NOT invoke for:
 - A second `requestAnimationFrame` loop driving scroll updates.
 - `lenis.start()` called anywhere.
 - `ScrollTrigger.update` bound directly to `window.scroll` events.
-- `new Lenis(...)` or a bare progress-scrub `ScrollTrigger.create` in site code — `aether/scroll` owns those primitives.
+- `new Lenis(...)` or a bare progress-scrub `ScrollTrigger.create` in site code — `ether/scroll` owns those primitives.
 - `raf(time * 1000)` at a call site — the bridge converts; double-scaling teleports the scroll.
 - ScrollTriggers created in module scope or in the scene constructor.
 - Mutating three.js objects directly from `onUpdate` (bypasses `tick()`'s deltaTime-aware path).
@@ -65,8 +65,8 @@ After implementing, run `premium-review` per the studio bar.
 
 ## After the skill
 
-- Point Claude at `aether-threejs` if the scroll-bound value is a shader uniform.
-- Point at `aether-shaders` if the value drives material parameters.
+- Point Claude at `ether-threejs` if the scroll-bound value is a shader uniform.
+- Point at `ether-shaders` if the value drives material parameters.
 - Recipes in `recipes.md` show the copy-paste skeletons. Cite `file:line` in commit messages so future grep finds the lineage.
 
 ## Files
