@@ -1,0 +1,14 @@
+{
+  "name": "claude-studio-toolkit",
+  "displayName": "Studio Toolkit",
+  "version": "0.1.0",
+  "description": "Skills, commands, hooks, and agents for premium three.js / WebGL web work with Claude Code: a slop checklist and technique library, shader and Lenis + ScrollTrigger recipes for the ether engine, remind-only quality hooks, and a read-only end-of-build review agent.",
+  "author": {
+    "name": "Jonathan Beck",
+    "url": "https://github.com/JonathanBeck1"
+  },
+  "homepage": "https://github.com/JonathanBeck1/claude-studio-toolkit",
+  "repository": "https://github.com/JonathanBeck1/claude-studio-toolkit",
+  "license": "MIT",
+  "keywords": ["claude-code", "plugin", "skills", "three.js", "webgl", "gsap", "lenis", "astro", "shaders"]
+}
