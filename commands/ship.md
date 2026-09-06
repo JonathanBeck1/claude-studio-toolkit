@@ -9,7 +9,7 @@ Steps in order — do not skip:
 
 1. **Snapshot state.** Run `git status` and `git diff --stat`. Confirm there are changes to ship. If working tree is clean, abort with "Nothing to ship."
 
-2. **Run premium-review.** Invoke the `premium-review` subagent against the current diff. It chains threejs-audit + brand-check + the ship checklist. Wait for its punch list.
+2. **Run premium-review.** Invoke the `premium-review` subagent (`claude-studio-toolkit:premium-review` when installed as a plugin) against the current diff. It chains threejs-audit + brand-check + the ship checklist. Wait for its punch list.
 
 3. **Triage findings.**
    - [CRITICAL] **Critical** → abort the ship flow, surface the issues, ask user how to proceed.

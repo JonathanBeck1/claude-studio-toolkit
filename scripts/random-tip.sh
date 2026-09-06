@@ -13,7 +13,7 @@ tips=(
   "Three.js: invoke the ether-threejs skill first. Default three.js output is slop."
   "Wrong model wastes money and quality: the strongest model for taste and review, a cheaper one for mechanical work."
   "When you catch Claude being wrong, that is a memory signal. Save the correction."
-  "Slash commands codify repeated workflows: /ship, /audit, /brand-check, /threejs-audit, /handoff."
+  "Slash commands codify repeated workflows. This plugin ships /ship, /audit, /brand-check, /threejs-audit, /handoff — under the claude-studio-toolkit: prefix when installed as a plugin."
   "/agents lists installed subagents: minimal-diff for surgical changes, repo-orientation for an unfamiliar codebase, premium-review before shipping."
 )
 

@@ -24,9 +24,11 @@ Or drop it in your skills directory so it loads automatically:
 git clone https://github.com/JonathanBeck1/claude-studio-toolkit ~/.claude/skills/claude-studio-toolkit
 ```
 
-Skills load on their triggers; commands are namespaced
-(`/claude-studio-toolkit:ship`); agents appear in `/agents`; hooks arm on
-load. `claude plugin validate .` passes.
+Everything registers under the `claude-studio-toolkit:` prefix —
+`/claude-studio-toolkit:ship`, the `claude-studio-toolkit:premium-review`
+agent, the `claude-studio-toolkit:ether-threejs` skill (skills also fire on
+their triggers without being named). Hooks arm on load.
+`claude plugin validate .` passes.
 
 ## What's inside
 
@@ -63,6 +65,27 @@ suites for the skill descriptions — see [Evals](#evals).
 | `repo-orientation` | Maps an unfamiliar codebase: the real entry point, one traced path end to end, long-lived state, and the seams. States only what it read in files it opened, and reports what it skipped. Read-only. |
 | `minimal-diff` | Writes the fewest lines that solve the stated problem. Declares a line budget up front, tests every line against the request, and reports what it noticed but deliberately left alone. |
 
+The shape of a `premium-review` result (illustrative):
+
+```
+# Premium Review
+
+Verdict: NEEDS VISUAL VERIFICATION
+Branch: feat/hero-rim  •  Files audited: 3
+
+## Should fix (before client-facing)
+- src/scene/HeroScene.ts:212 — bloom intensity raised to 0.14; the hero preset's ceiling is 0.06
+  Why: above ~0.1 the whole bright area halos. Raise luminanceThreshold to gate harder instead.
+
+## Passed
+- threejs-audit: HeroSculpture.ts — custom ShaderMaterial, DPR cap present, composer MSAA wired
+- brand-check: colors resolve to tokens, display face matches the brand doc
+- ship-readiness: no stray logs, no secrets, diff scoped to the task
+
+## Before READY
+- View / at 1440×900 and 390×844: confirm the rim reads as an edge, not a second glyph
+```
+
 ### Hooks (`hooks/hooks.json`)
 
 Remind-only — they print, never block.
@@ -96,10 +119,10 @@ shader skill).
 ```
 
 The format is runner-agnostic: anything that can start a session per query
-and watch whether the skill loads will score them. The descriptions here
-were measured this way against a held-out split and hand-reviewed before
-being kept. If you edit a description, re-run its suite before trusting it —
-a description that reads well can still fire on the wrong half of these.
+and watch whether the skill loads will score them. The descriptions were
+hand-tuned with explicit negative scope; the suites exist so that any later
+edit can be checked against them rather than trusted on read — a description
+that reads well can still fire on the wrong half of these.
 
 ## Provenance
 

@@ -3,7 +3,7 @@ description: Run the first-session onboarding ritual for a new collaborator.
 argument-hint: [no args — fires the full ritual]
 ---
 
-Invoke the `studio-onboard` skill. Run the full ritual end-to-end:
+Invoke the `studio-onboard` skill (`claude-studio-toolkit:studio-onboard` when installed as a plugin). Run the full ritual end-to-end:
 
 1. Greet (read `tour.md` Opening).
 2. Verify environment (`git rev-parse --show-toplevel`, `node --version` against the repo's `engines` field, `node_modules/` present where the app lives).

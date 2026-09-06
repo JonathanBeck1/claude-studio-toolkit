@@ -68,10 +68,10 @@ For every changed file, decide which audits apply. A single file can trigger mor
 
 ### 3. Run audits
 
-`threejs-audit` and `brand-check` are slash commands, not skills — do not call `Skill(...)` for them. Apply their checklists directly: Read the command file and follow it against the relevant file paths so the audit covers only what changed:
+`threejs-audit` and `brand-check` are checklists, not tasks to delegate — do not invoke them as commands or skills from here. Apply them directly: Read each command file and follow it against the relevant file paths so the audit covers only what changed. The files ship beside this agent in the plugin's `commands/` directory — locate them with Glob (`**/commands/threejs-audit.md`, `**/commands/brand-check.md`); a project's own `.claude/commands/` copy also counts:
 
-- three.js triggered → Read `.claude/commands/threejs-audit.md` and apply its checklist to the file list
-- brand triggered → Read `.claude/commands/brand-check.md` and apply its checklist to the file list
+- three.js triggered → Read `threejs-audit.md` and apply its checklist to the file list
+- brand triggered → Read `brand-check.md` and apply its checklist to the file list
 - always → apply the read-only ship-readiness review below (do NOT invoke any `ship` skill or the `/ship` command — `/ship` orchestrates *you*, so calling it would loop)
 
 The command checklists produce the findings. Your job is to collect, dedupe, and present them — not to re-derive standards from memory.
