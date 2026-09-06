@@ -118,11 +118,35 @@ shader skill).
 ]
 ```
 
-The format is runner-agnostic: anything that can start a session per query
-and watch whether the skill loads will score them. The descriptions were
-hand-tuned with explicit negative scope; the suites exist so that any later
-edit can be checked against them rather than trusted on read — a description
-that reads well can still fire on the wrong half of these.
+Run them:
+
+```bash
+scripts/run_evals.py --out evals/RESULTS.md
+```
+
+Each query starts a fresh headless session with the plugin loaded, isolated
+from user-level skills (`--setting-sources project`), working inside a copy
+of `evals/fixture/` — a small Astro + three.js project, so "walk me through
+this repo" has a repo to walk through. The first `Skill` call within two
+turns is the verdict. Stdlib Python; needs the `claude` CLI on `PATH`.
+
+Measured 2026-09-05 with `sonnet` ([full report](./evals/RESULTS.md)):
+
+| Skill | should fire | fired | should not | fired anyway |
+|---|---|---|---|---|
+| `ether-threejs` | 8 | 6 | 12 | 0 |
+| `ether-shaders` | 10 | 10 | 10 | 0 |
+| `ether-scroll` | 10 | 9 | 10 | 0 |
+| `studio-onboard` | 10 | 10 | 10 | 0 |
+
+Zero false positives across 42 should-not queries; the three misses fired
+nothing rather than the wrong skill. Results move a little between runs — a
+single flip is noise, a pattern is a description problem. Run with
+`--no-isolate` on a machine with a broad personal skill library and a few
+queries go to adjacent third-party skills instead; that is real behaviour on
+that machine, not a description fault, and the report counts it separately.
+The descriptions were hand-tuned with explicit negative scope; the suites
+exist so that any later edit is checked rather than trusted on read.
 
 ## Provenance
 
