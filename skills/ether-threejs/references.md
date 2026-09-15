@@ -61,7 +61,7 @@ Every technique file in `techniques/` is referenced by at least one studio entry
 
 ### Bonhomme
 - **URL (intended):** https://bonhommeparis.com  *(NOT bonhomme.lol — see note)*
-- **Capture note:** the original capture hit `bonhomme.lol`, a personal developer portfolio, not the Bonhomme Paris studio. Verify against bonhommeparis.com before relying on this entry.
+- **Capture note:** the capture exists, but it is of the wrong site — it hit `bonhomme.lol`, a personal developer portfolio, not the Bonhomme Paris studio. `bonhommeparis.com` resolves as of 2026-09-15, so the re-capture is unblocked: capture the right site and rewrite this entry from it.
 - **Specific technique demonstrated:** *Cannot annotate without a verified capture.* Bonhomme Paris is known publicly for narrative scrollytelling case studies with persistent canvas state across route changes, but do not implement from that reputation alone — re-capture and verify before quoting specifics.
 - **Where to look:** N/A until re-captured.
 - **Related technique file:** `techniques/persistent-canvas-routing.md`
@@ -134,8 +134,8 @@ Every technique file in `techniques/` is referenced by at least one studio entry
 ---
 
 ### Antinomy Studio (DEAD DOMAIN)
-- **URL (attempted):** https://antinomystudio.com — does not resolve as of capture date.
-- **Capture note:** the domain returned no response at capture time (2026-04-28).
+- **URL (attempted):** https://antinomystudio.com — does not resolve.
+- **Capture note:** no DNS record at capture time (2026-04-28); re-checked 2026-09-15, still NXDOMAIN.
 - **Specific technique demonstrated:** Unknown. Studio status unknown — could be relocated to a new domain, sunset, or temporary outage.
 - **Where to look:** N/A.
 - **Related technique file:** `techniques/raymarched-sdf-hero.md` *(tentative — based on prior reputation only; do not cite as evidence)*

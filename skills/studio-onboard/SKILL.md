@@ -18,7 +18,8 @@ Invoke EXCLUSIVELY on the first session for a new contributor. For a returning p
 2. **Verify environment.** In order:
    - Run `git rev-parse --show-toplevel` — confirm we're at the repo root.
    - Run `node --version` — compare against the `engines` field of the app's `package.json`.
-   - Check that `node_modules/` exists where the app lives. If missing, ask the user "Run `npm install` now?" — do NOT run it unilaterally.
+   - Check that `node_modules/` exists where the app lives.
+   - Most repo checklists make install + a dev-server smoke test the first thing a new collaborator does. If this one does, OFFER it: "Run `npm install` and start the dev server to confirm the app boots?" Run it only on an explicit yes, report the URL it serves, and stop the server once the check passes. Never run either unilaterally, and never substitute your own command for the one the checklist names.
 
 3. **Anchor context.** Read these in order:
    - `/CLAUDE.md` (auto-loaded but re-read to prime the conversation)
@@ -31,10 +32,12 @@ Invoke EXCLUSIVELY on the first session for a new contributor. For a returning p
 
 6. **First-day prompt.** Read section 8 of `tour.md`. Wait for the user's answer. Route them to the matching skill / subagent / file using the tour's routing guide.
 
+7. **Confirm the context actually loads.** Most repo checklists close by having the new collaborator verify that `CLAUDE.md` is being auto-loaded — typically by asking the repo's own bar question ("what's the bar?" in the studio's vocabulary) and checking the answer comes back in the repo's own terms, unprompted. Run that check: put the question to the user to ask, and if the answer does not land in the repo's language, `CLAUDE.md` is not loading. Say so plainly and tell them to fix that before trusting any later session — do not paper over it by quoting the file you read manually in step 3.
+
 ## What not to do
 
-- Do NOT pre-install dependencies, start the dev server, or modify any files during the ritual. Ask first.
-- Do NOT commit during onboarding. The session is read-only.
+- Do NOT install dependencies, start the dev server, or modify any files WITHOUT asking. Install and the dev-server smoke test are an offered step (step 2) when the repo's checklist calls for them — offer, wait for a yes, then run. Everything else stays hands-off.
+- Do NOT commit, push, or branch during onboarding. Apart from the offered install / dev-server check, the session changes nothing.
 - Do NOT shorten the ritual because the user seems experienced. The full ritual is what makes the first session deterministic.
 - Do NOT inject personal opinions about the codebase or studio direction. Stick to what the files say.
 - Do NOT fill a bracketed prompt from memory or guesswork. If the repo doesn't document it, say so.

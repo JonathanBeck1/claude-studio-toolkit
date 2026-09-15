@@ -1,3 +1,4 @@
+// Standalone reference snippet — not shipped by the engine; ether/shaders exports the dither chunk only.
 // 3D curl noise — divergence-free vector field for organic particle flow
 // Source: based on Inigo Quilez and Pat Lefebvre's curl-of-noise derivations
 // Returns: vec3 flow vector at position p

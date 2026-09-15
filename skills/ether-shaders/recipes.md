@@ -10,14 +10,17 @@ Reference Claude reads when `ether-shaders` is invoked. Engine cites are ether r
 
 ---
 
-## 1. Hero composer preset — bloom + dither (`src/postfx/heroComposer.ts`)
+## 1. Hero composer preset — bloom + dither (`src/postfx/heroComposer.ts`, chain in `src/postfx/composer.ts`)
+
+A preset is a *tuning*, not a composer. It picks its effects and hands them to `createComposer`; that function owns the chain.
 
 ```ts
-export function createHeroComposer(renderer, scene, camera, options: HeroComposerOptions = {}): HeroComposer {
-  const { enableDither = true, multisampling = 0 } = options;
-  const composer = new EffectComposer(renderer, { multisampling });
-  composer.addPass(new RenderPass(scene, camera));
-
+export function createHeroComposer(
+  renderer: THREE.WebGLRenderer,
+  scene: THREE.Scene,
+  camera: THREE.Camera,
+  options: PresetOptions = {},
+): BloomComposer {
   const bloom = new BloomEffect({
     intensity: 0.06,             // restrained — bloom is sensed, not seen
     luminanceThreshold: 0.65,    // only the bright accent core triggers it
@@ -25,35 +28,36 @@ export function createHeroComposer(renderer, scene, camera, options: HeroCompose
     mipmapBlur: true,
     kernelSize: KernelSize.MEDIUM,
   });
-
-  const dither = enableDither ? new DitherEffect() : undefined;
-  composer.addPass(new EffectPass(camera, ...(dither ? [bloom, dither] : [bloom])));
-  return { composer, bloom, dither };
+  return { ...createComposer(renderer, scene, camera, { ...options, effects: [bloom] }), bloom };
 }
 ```
 
 Key facts:
-- **LDR composer (no `frameBufferType: HalfFloatType`).** Values clip at 1.0 deliberately — this is the bloom containment strategy. `createNightComposer` is the HDR variant (`hdr: true` → half-float buffers + ACES tone mapping) for scenes whose light IS emissive geometry.
+- **`createComposer` is the one composer shape.** One `RenderPass`, then ONE `EffectPass` fusing your effects → (ACES when `hdr`) → dither. `postprocessing` merges them into a single shader, so an extra effect costs ALU, not a render target. Reach for `createComposer` directly when a preset's tuning is wrong for your scene.
+- **LDR by design.** `createHeroComposer` never passes `hdr`, so buffers stay 8-bit and values clip at 1.0 — that clipping IS the bloom containment. `hdr` lives on `ComposerOptions`; among the presets only `createNightComposer` re-exposes it (`NightComposerOptions`). It switches on half-float buffers plus an ACES `ToneMappingEffect`, which is also what makes `toneMappingExposure` a live knob instead of a dead one.
 - **Bloom intensity `0.06` is the ceiling** for the hero preset. Higher reads as glow-spam. If you need more visible bloom, raise `luminanceThreshold` to gate it harder, not `intensity`.
-- **Quality-tier wiring:** every tier runs the composer; the per-tier differences live in the quality profile. Pass `{ enableDither: quality.enableDither, multisampling: quality.msaaSamples }` — composer MSAA is the antialiasing that actually reaches the screen once passes render to textures.
-- **Don't parameterize beyond recognition.** If you need a different mood, write a second preset. Don't grow this function into a config zoo.
-- **Returns `{ composer, bloom, dither }`** so a tweaks panel can bind `bloom.intensity` live.
+- **Quality-tier wiring:** every tier runs the composer *with* dither — the profile ships `enablePostFX: true` and `enableDither: true` on LOW, MID and HIGH alike, and the only per-tier difference is `msaaSamples` (HIGH 4 / MID 2 / LOW 0). Pass `{ enableDither: quality.enableDither, multisampling: quality.msaaSamples }` and let the profile decide; composer MSAA is the antialiasing that actually reaches the screen once passes render to textures.
+- **Don't parameterize beyond recognition.** If you need a different mood, write a second preset on `createComposer`. Don't grow this function into a config zoo.
+- **Returns `BloomComposer`** — `{ composer, effects, dither?, bloom }` — so a tweaks panel can bind `bloom.intensity` live.
 
-**When to use:** any dark scene with a single bright accent that needs the felt-not-seen bloom + grain. Different aesthetics get their own preset.
+**When to use:** any dark scene with a single bright accent that needs the felt-not-seen bloom + grain. Different aesthetics get their own preset: `createNightComposer` for scenes whose light IS emissive geometry (hotter bloom, `LARGE` kernel, optional HDR), `createLightComposer` for a pale ground where bloom would just lift the whole field (dither only).
 
 ---
 
-## 2. Dither effect — 8×8 Bayer (`src/postfx/DitherEffect.ts`, `src/shaders/dither.glsl`)
+## 2. Dither effect — per-pixel hash grain (`src/postfx/DitherEffect.ts`)
 
 ```ts
 import { Effect, BlendFunction } from 'postprocessing';
-import dither from '../shaders/dither.glsl?raw';
 
 const ditherFragment = /* glsl */`
-  ${dither}
   void mainImage(const in vec4 inputColor, const in vec2 uv, out vec4 outputColor) {
-    float d = dither8x8(gl_FragCoord.xy);
-    outputColor = vec4(inputColor.rgb + (d - 0.5) / 64.0, inputColor.a);
+    // Effects run in linear light and the pass encodes to sRGB afterwards, so the
+    // noise goes in through the encoded domain: one output step peak to peak at
+    // every luminance, where the same amount in linear was several steps in the darks.
+    float seed = floor(time * 6.0);
+    float d = fract(sin(dot(gl_FragCoord.xy + vec2(fract(seed * 0.73) * 61.0, fract(seed * 0.91) * 83.0), vec2(12.9898, 78.233))) * 43758.5453);
+    vec3 encoded = sRGBTransferOETF(vec4(inputColor.rgb, 1.0)).rgb + (d - 0.5) / 255.0;
+    outputColor = vec4(sRGBTransferEOTF(vec4(encoded, 1.0)).rgb, inputColor.a);
   }
 `;
 
@@ -64,16 +68,20 @@ export class DitherEffect extends Effect {
 }
 ```
 
-`src/shaders/dither.glsl` provides `float dither8x8(vec2 fragCoord)` returning 0..1 from an 8×8 Bayer matrix. The effect adds `(d - 0.5) / 64.0` to each color channel — a barely-perceptible perturbation that breaks up gradient banding without producing visible texture noise.
+Three things make this correct rather than merely noisy:
+- **It perturbs in the encoded domain, not in linear light.** Effects run linear and the pass encodes to sRGB afterwards, so the grain is applied through `sRGBTransferOETF` and undone with `sRGBTransferEOTF`. The amplitude `(d - 0.5) / 255.0` is therefore **one output step peak to peak at every luminance** — uniform across the ramp. The same amount added in linear light was worth several output steps in the darks and almost nothing in the highlights, which is the bug this replaced.
+- **Per-pixel hash, not an ordered matrix.** A `sin`/`fract` hash of `gl_FragCoord`, so there is no 8×8 tile to catch the eye as texture.
+- **Reseeded ~6×/second** (`floor(time * 6.0)`), so the grain moves slowly instead of freezing into a fixed pattern on a static frame.
+
+**Not the Bayer chunk.** `ether/shaders` ships a standalone 8×8 ordered matrix (`dither8x8`, in `src/shaders/dither.glsl`) for use inside *your own* materials. `DitherEffect` does not use it — don't wire one up expecting the other.
 
 **When to use:**
-- Dark gradients (a navy backdrop is the canonical case).
+- Dark gradients — a deep, near-black backdrop is the canonical case.
 - Any scene with banding visible on smooth color transitions.
-- Every quality tier — it merges into bloom's fullscreen pass, so it is effectively free.
+- Every quality tier, and every preset — it merges into the same fullscreen pass as bloom, so it is effectively free.
 
 **When NOT to use:**
 - Already-noisy content (caustics, particles, displacement-heavy shaders). Adding dither on top is a free pass with no benefit.
-- HDR composers (the `/ 64.0` constant is calibrated for LDR clipping).
 
 ---
 
@@ -180,7 +188,18 @@ Three-pass pipeline:
 
 **Per-letter handles** for animation: each letter is its own geometry — use `assembledPosition` as the intro's target pose and animate letters independently.
 
-**MSDF is not in the engine.** For crisp flat type at viewport scale see the `msdf-typography` technique in `ether-threejs`. `extrudedWord` is the dimensional-type path.
+**MSDF ships in the engine too — pick the right one.** `msdfText` lives at `ether/text/msdf` (`src/text/msdf/index.ts`), its own entry point so the optional `troika-three-text` peer is pulled in only by sites that import it. It returns `Promise<MSDFText>` — `{ mesh, dispose }` — resolved once troika's glyph atlas is ready, so the first frame it renders is complete.
+
+```ts
+import { msdfText } from 'ether/text/msdf';
+
+const caption = await msdfText({ text: 'Chapter One', font: '/fonts/display.woff', fontSize: 0.4 });
+scene.add(caption.mesh);
+```
+
+Serve your own font file (`.ttf` / `.otf` / `.woff` — troika's parser does not read woff2); the URL is preflighted, so an unreachable one rejects instead of hanging forever. Characters your font doesn't cover fall back to troika's unicode-font-resolver, whose data comes from jsDelivr unless you set `unicodeFontsURL` to your own copy. Raise `sdfGlyphSize` from its default 64 to 128 when the camera ranges close enough to read the glyph edge. Pass your own `material` and troika derives an MSDF-aware variant of it, so a custom `ShaderMaterial` keeps its identity.
+
+**`extrudedWord` is type as FORM; `msdfText` is type as TEXT** — legible copy inside the scene: captions, chapter heads, UI in the world.
 
 **When to use:** hero brand-as-form; section titles where dimensional type sells the premium frame.
 
@@ -195,21 +214,29 @@ Three-pass pipeline:
 
 ```ts
 import { ShaderQuad } from 'ether/primitives';
+import vert from './my-backdrop.vert.glsl?raw';
 import frag from './my-backdrop.frag.glsl?raw';
 
 const backdrop = new ShaderQuad({
+  vertexShader: vert,     // required — there is no default passthrough
   fragmentShader: frag,
   uniforms: {
-    uColor: { value: new THREE.Color('#101418') },
+    // Placeholder. Real values come from your site's constants module.
+    uBaseColor: { value: new THREE.Color('#101418') },
   },
 });
 scene.add(backdrop.mesh);
+// per frame / on resize / on teardown
+backdrop.tick(elapsed);
+backdrop.resize(w, h);
+backdrop.dispose();
 ```
 
 Key facts:
-- **Geometry:** a large plane behind the scene, big enough to fill the viewport at any reasonable FOV.
-- **`renderOrder = -10`, `depthWrite = false`, `depthTest = false`, `frustumCulled = false`.** Always renders first, never writes depth, never culls — the "draw everything behind everything else" pattern.
-- **Auto-wired uniforms:** `uTime` (advances per frame) and `uAspect` (viewport width/height). Don't declare these manually.
+- **Geometry:** a `PlaneGeometry`, `width` 50 × `height` 32 at `z = -8` by default — oversized to overshoot the frustum at any reasonable FOV. All three are options.
+- **`renderOrder = -10`, `depthWrite = false`, `depthTest = false`, `frustumCulled = false`** by default. Always renders first, never writes depth, never culls — the "draw everything behind everything else" pattern.
+- **Auto-wired uniforms:** `uTime` (written by `tick(time)`) and `uAspect` (written by `resize(w, h)`). Don't declare these in `uniforms` — the class adds them.
+- **Colors are yours, not the primitive's.** `ShaderQuad` owns the wiring; the palette arrives as uniforms from the consuming site. A site's caustics layer wraps this class and injects its own base/hint colors.
 
 **When to use:** any full-viewport shader backdrop — caustics, gradients, generative wallpapers. A site's caustics layer can wrap this in its own class and follow the same pattern.
 
@@ -249,7 +276,7 @@ Key facts:
 
 - **Bloom looks blown out / hazy.** The LDR composer is at its ceiling. Don't raise `intensity`; raise `luminanceThreshold` to gate harder.
 - **Type ghosts (front face + bevel reading as two letters).** Fresnel exponent too low (rim spreading onto bevel surfaces). Raise `uFresnelExp`.
-- **Banding on the backdrop gradient.** Add `DitherEffect` to the composer. If already present, the banding may be on the source gradient — check the colors aren't so close that quantization is inevitable.
+- **Banding on the backdrop gradient.** Add `DitherEffect` to the composer (`enableDither` defaults true on `createComposer`, so this usually means the composer isn't running at all). If it IS present, the banding is on the source gradient — check the colors aren't so close that quantization is inevitable. Don't reach for the `dither8x8` Bayer chunk here; that's for use inside a material, and the effect already covers the frame.
 - **Vertex displacement blurs the form.** Multiplier past the ceiling. Lower it on letter-extrusion geometry; lower still on small details.
 - **Material doesn't fade on scroll.** Forgot `transparent: true` on the material, OR the `uAlpha` uniform isn't wired to the scroll trigger. See `ether-scroll` §5.
 - **`?raw` import returns undefined.** `optimizeDeps.exclude: ['ether']` missing in your Vite/Astro config. Without it esbuild pre-bundling chokes on the import syntax.
@@ -259,8 +286,13 @@ Key facts:
 
 ## Engine citation index
 
-- `src/postfx/heroComposer.ts` — `createHeroComposer` (LDR bloom + dither), `createNightComposer` (HDR/ACES variant)
-- `src/postfx/DitherEffect.ts` — dither pass
-- `src/shaders/dither.glsl` — Bayer matrix function
-- `src/text/extrudedWord.ts` — `extrudedWord(word, fontSource, options)` + `ExtrudedLetter`
-- `src/primitives/ShaderQuad.ts` — backdrop primitive
+Cite the file and the symbol, never a line number — these files move.
+
+- `src/postfx/composer.ts` — `createComposer` + `ComposerOptions` / `Composer`. The actual chain every preset runs through.
+- `src/postfx/heroComposer.ts` — `createHeroComposer` (restrained LDR bloom), `createNightComposer` (hotter bloom for emissive-heavy scenes, optional `hdr`), `createLightComposer` (dither only); `PresetOptions`, `NightComposerOptions`, `BloomComposer`.
+- `src/postfx/DitherEffect.ts` — `DitherEffect`, the per-pixel hash grain applied through the sRGB transfer.
+- `src/shaders/dither.glsl` — standalone `dither8x8` Bayer matrix chunk for your own materials. Not used by `DitherEffect`.
+- `src/quality/quality.ts` — `detectQuality` / `QualityProfile`. Where `enablePostFX`, `enableDither` and `msaaSamples` are actually decided.
+- `src/text/extrudedWord.ts` — `extrudedWord(word, fontSource, options)` → `Promise<ExtrudedLetter[]>`.
+- `src/text/msdf/index.ts` — `msdfText(options)` → `Promise<MSDFText>`, exported as `ether/text/msdf`.
+- `src/primitives/ShaderQuad.ts` — backdrop primitive.

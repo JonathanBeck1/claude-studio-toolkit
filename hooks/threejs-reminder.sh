@@ -21,7 +21,7 @@ case "$file_path" in
 [hook:threejs-reminder] Scene file touched. Before reporting complete:
   1. Invoke the `ether-threejs` skill — confirm against the slop checklist.
   2. Run the `premium-review` subagent.
-See /CLAUDE.md for the studio bar.
+See /CLAUDE.md for this project's bar.
 EOF
     ;;
 esac

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # PreToolUse hook for Bash.
-# When the command is `git commit` and staged changes include client-deliverable
+# Registered on PreToolUse/Bash; this script decides whether it applies.
+# When the command is `git commit` and staged changes include deliverable
 # paths (src/scene, src/components, src/styles), remind that premium-review
 # should have run. Non-blocking.
 set -euo pipefail
@@ -19,7 +20,7 @@ case "$cmd" in
     staged=$(git -C "${CLAUDE_PROJECT_DIR:-.}" diff --cached --name-only 2>/dev/null || true)
     if printf '%s\n' "$staged" | grep -qE "${STUDIO_DELIVERABLE_RE:-(^|/)src/(scene|components|styles)/}"; then
       cat <<'EOF'
-[hook:premium-review-reminder] Staged changes touch client deliverable paths.
+[hook:premium-review-reminder] Staged changes touch deliverable paths.
 Confirm `premium-review` has run since the last code change. If not, abort the
 commit and run it now — `premium-review` chains threejs-audit + brand-check +
 ship pre-commit checklist. This hook does not block; it relies on you to do

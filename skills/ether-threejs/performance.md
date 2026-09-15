@@ -13,7 +13,7 @@ Premium three.js sites die when they ship laggy mobile. These numbers are non-ne
 | three.js itself | ~150 KB gzip | (fixed, the library cost) |
 | Per-page asset payload (models + textures combined) | 1.0 MB | 1.5 MB |
 | Single texture max | 512 KB compressed (KTX2) | 1 MB |
-| Single model max | 300 KB compressed (DRACO + Meshopt) | 500 KB |
+| Single model max | 300 KB compressed (DRACO) | 500 KB |
 | Draw calls per frame | < 50 | < 100 |
 | Triangles per scene | < 200k | < 500k |
 
@@ -34,16 +34,16 @@ Premium three.js sites die when they ship laggy mobile. These numbers are non-ne
 5. Confirm sustained 30+ FPS. If lower, common causes:
    - Texture sizes too large (compress with KTX2)
    - Too many draw calls (use instanced rendering)
-   - Postprocessing too heavy (reduce passes on mobile via media query or device-pixel-ratio check)
+   - Postprocessing too heavy (branch on the tier from `detectQuality()` in `ether/quality` — not a media query)
    - Custom shader has expensive operations in fragment shader (move to vertex where possible)
 
 ## Required optimizations from day one
 
 - [ ] All textures compressed to KTX2 / Basis Universal before commit
-- [ ] All glTF models run through `gltf-transform` with DRACO + MeshOpt
-- [ ] `renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))` — never blindly use device pixel ratio
+- [ ] All glTF models run through `gltf-transform` with DRACO for geometry and KTX2 for textures — `loadGLTF` registers `DRACOLoader` and `KTX2Loader` only, so a MeshOpt-compressed file will not decode at runtime
+- [ ] `renderer.setPixelRatio(Math.min(window.devicePixelRatio, quality.dprCap))` — never blindly use device pixel ratio, and never hard-code the cap. `dprCap` is 1.5 on LOW and MID, 2 on HIGH; `SceneManager` already applies it on attach
 - [ ] Particle systems > 1000 particles use `InstancedMesh` or `Points` with custom buffer geometry, never individual meshes
-- [ ] Postprocessing passes that are heavy on mobile (e.g., `DepthOfField`) gated by viewport width or device-pixel-ratio
+- [ ] Postprocessing passes that are heavy on mobile (e.g., `DepthOfField`) gated on the quality tier, not on viewport width
 - [ ] Static geometries marked `geometry.computeBoundingSphere()` once and frustum-culled
 - [ ] `renderer.shadowMap` disabled unless shadows are deliberately part of the art direction
 - [ ] Lazy-load assets per route — don't bundle every page's models into the initial chunk
@@ -52,7 +52,7 @@ Premium three.js sites die when they ship laggy mobile. These numbers are non-ne
 
 | Symptom | Likely cause | Fix |
 |---|---|---|
-| Mobile FPS < 30 | Pixel ratio too high | Cap at 2.0 |
+| Mobile FPS < 30 | Pixel ratio too high | Confirm `quality.dprCap` is applied (1.5 below HIGH) |
 | Mobile FPS < 30, low draw calls | Fragment shader too expensive | Profile via Spector.js, simplify |
 | Long initial paint | Hero model too large | Compress with `gltf-transform` |
 | Memory grows over time | Geometries or textures not disposed on route change | Audit `SceneManager` cleanup |
@@ -62,6 +62,6 @@ Premium three.js sites die when they ship laggy mobile. These numbers are non-ne
 ## Tooling
 
 - **Spector.js** — browser extension. Captures a single WebGL frame. Inspect every draw call, every shader, every uniform. Indispensable for debugging custom shaders.
-- **stats.js** — drop-in FPS / MS / MB overlay. Add behind a `?stats` query param.
+- **`Stats` (`ether/dev`)** — the engine's own overlay: FPS, frame ms, GPU tier, DPR, composer state, viewport. No memory readout — use the DevTools Memory tab for that. Mount it behind a `?stats` query param and import it dynamically so it ships zero bytes when the param is absent.
 - **Chrome DevTools Coverage tab** — finds unused JS / CSS that's bloating the bundle.
 - **Lighthouse** — periodic checks for FCP / LCP. Run from CI.

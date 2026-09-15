@@ -6,7 +6,7 @@
   {"query": "Set up scrollytelling sections that reveal as they enter the viewport on our site", "should_trigger": true},
   {"query": "Smooth scroll should only kick in on the high quality tier — how do we gate Lenis by tier?", "should_trigger": true},
   {"query": "Add a scroll cue that fades out once the user starts scrolling", "should_trigger": true},
-  {"query": "Bridge Lenis to ScrollTrigger so they share one rAF loop instead of running two", "should_trigger": true},
+  {"query": "Reloading mid-page makes the hero snap to a mid-scroll state on first render — fix the scroll restoration", "should_trigger": true},
   {"query": "Build a parallax effect tied to scroll progress in the WebGL hero", "should_trigger": true},
   {"query": "Persist the canvas across scroll and hand the scroll progress into the 3D scene", "should_trigger": true},
   {"query": "Add a CSS scroll-snap between the full-screen sections", "should_trigger": false},

@@ -9,7 +9,7 @@ Write a session handoff. Slug: $ARGUMENTS (if empty, derive a short kebab-case s
 - `git rev-parse --abbrev-ref HEAD` — current branch.
 - `git status --short` — uncommitted work.
 - `git log --oneline -8` — recent commits.
-- `git diff --stat origin/master...HEAD` (fall back to `main` if there's no `master`) — what this branch changed vs base.
+- `git diff --stat "$BASE"...HEAD`, where `$BASE` is the repo's default branch resolved the way the `premium-review` agent resolves it — what this branch changed vs base.
 
 Determine today's date in `YYYY-MM-DD` (use `date +%Y-%m-%d`).
 
