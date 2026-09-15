@@ -1,3 +1,4 @@
+// Standalone reference snippet — not shipped by the engine, which grades through postprocessing's LUT3DEffect fed by loadLUT in ether/postfx.
 // LUT-based color grading
 // Sample a 3D LUT laid out as a 2D strip texture (typical: 256x16, 16 slices of 16x16)
 // Use: color.rgb = applyLUT(uLutTexture, color.rgb);

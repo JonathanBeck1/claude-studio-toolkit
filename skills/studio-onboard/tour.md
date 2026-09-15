@@ -49,4 +49,6 @@ End the ritual by asking the user: "What's the first thing you want to build or 
 - **Codebase orientation** → `repo-orientation` subagent
 - **"I don't know yet"** → suggest reading the app's README and the "Current direction" section first
 
-After routing, end the session. Next time the user sits down, no ritual — just work.
+The skill, command, and two subagents named above ship with this toolkit. If the repo routes somewhere else, follow the repo.
+
+After routing, run the closing context check (SKILL.md step 7), then end the session. Next time the user sits down, no ritual — just work.

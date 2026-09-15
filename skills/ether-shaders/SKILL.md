@@ -26,26 +26,29 @@ Invoke alongside `ether-threejs` (the general slop checklist) — this skill spe
 ## The engine / site boundary
 
 - **Engine owns** (ether `src/`):
-  - `postfx/DitherEffect` — 8×8 Bayer.
-  - `postfx/createHeroComposer` — restrained bloom + optional dither (LDR composer); `createNightComposer` — the HDR/ACES variant for emissive-heavy scenes.
-  - `primitives/ShaderQuad` — fullscreen backdrop plane with auto-wired `uTime` / `uAspect`.
-  - `text/extrudedWord` — opentype → SVGLoader → ExtrudeGeometry pipeline.
+  - `postfx/composer.ts` — `createComposer`, the one composer shape: render → your effects → (ACES when `hdr`) → dither, fused into a single `EffectPass`.
+  - `postfx/heroComposer.ts` — three tunings of it: `createHeroComposer` (restrained LDR bloom for a dark scene with one bright accent), `createNightComposer` (hotter bloom for scenes whose light IS emissive geometry; exposes the optional `hdr` flag), `createLightComposer` (dither only — bloom on a pale ground just lifts the ground).
+  - `postfx/DitherEffect.ts` — per-pixel hash grain applied through the sRGB transfer. Separately, `shaders/dither.glsl` is a standalone 8×8 Bayer chunk for your own materials; the effect does not use it.
+  - `primitives/ShaderQuad` — backdrop plane with auto-wired `uTime` / `uAspect`.
+  - `text/extrudedWord` — opentype → SVGLoader → ExtrudeGeometry pipeline (type as form).
+  - `text/msdf` — `msdfText`, a troika-backed MSDF mesh (type as text), on its own entry so the optional peer stays optional.
 - **Your site owns** (`src/shaders/<scene>/`):
-  - The hero material shaders — the brand's identity. Site-specific until a second consumer needs them.
+  - The hero material shaders — your identity. Site-specific until a second consumer needs them.
   - Backdrop shaders (caustics, gradients, generative fields).
 
-Don't promote site shaders to the engine without a generalization pass (uniform-driven palettes, no hardcoded brand-token vec3s).
+The engine is brand-free by construction: it ships wiring and takes the palette as uniforms, so the site injects its own colors. Don't promote site shaders to the engine without a generalization pass (uniform-driven palettes, no hardcoded brand-token vec3s).
 
 ## Hard rules
 
 - **GLSL is imported via `?raw`.** Pattern: `import frag from './x.frag.glsl?raw'`. Even if `vite-plugin-glsl` is configured, match the codebase's actual pattern.
-- **`optimizeDeps.exclude: ['ether']`** is mandatory in your `astro.config.ts` (or Vite config). Without it, the engine's `?raw` consumers break at build. **Never set `preserveSymlinks: true`** for a `file:` layout — it pins the engine at its node_modules path so edits don't hot-reload.
-- **Two composer presets exist — pick one, don't mutate one into the other.** `createHeroComposer` is LDR by design (no `HalfFloatType`; values clip at 1.0 deliberately as bloom containment). `createNightComposer` has an `hdr` option using `HalfFloatType` + ACES `ToneMappingEffect`.
-- **Edge AA comes from the composer's `multisampling`, never the context `antialias` flag.** Post-processing renders into textures that bypass the canvas framebuffer, so context MSAA is visually dead the moment a composer runs (the quality profile sets it false and carries `msaaSamples` instead — wire via `createHeroComposer({ multisampling: quality.msaaSamples })`).
-- **Dither runs on every tier.** It merges into the SAME fullscreen pass as bloom (a few ALU ops — effectively free) and kills the dark-gradient banding that reads as posterized color on mobile OLED.
+- **`optimizeDeps.exclude: ['ether']`** is mandatory in your `astro.config.ts` (or Vite config) for a git / `file:` install, which ships raw `.ts`. esbuild's dep-scan can't parse the engine's Vite-only `?raw` GLSL imports; excluding it routes those files through Vite's full plugin pipeline instead.
+- **Never set `preserveSymlinks: true`** for a `file:` layout — it pins the engine at its node_modules path, which Vite ignores for file-watching, so engine edits never hot-reload and it gets served as a stale cached external dep. Its one job (resolving the engine's bare `three` / `postprocessing` imports into the *site's* node_modules) is done correctly by `resolve.dedupe: ['three', 'postprocessing', …]` — set that instead. Both rules live together in `astro.config.ts`.
+- **Three composer presets exist — pick one, don't mutate one into the other.** All three are thin tunings over `createComposer`; if none fits, write a fourth on `createComposer` rather than parameterising an existing one. `createHeroComposer` takes `PresetOptions` and is LDR by design — it never passes `hdr`, so values clip at 1.0 deliberately as bloom containment. Only `createNightComposer` re-exposes `hdr` (`NightComposerOptions`), which switches on `HalfFloatType` buffers + an ACES `ToneMappingEffect` and makes `toneMappingExposure` live. `createLightComposer` is dither-only.
+- **Edge AA comes from the composer's `multisampling`, never the context `antialias` flag.** Post-processing renders into textures that bypass the canvas framebuffer, so context MSAA is visually dead the moment a composer runs (the quality profile sets `antialias: false` and carries `msaaSamples` instead — wire via `createHeroComposer(renderer, scene, camera, { multisampling: quality.msaaSamples })`).
+- **Dither runs on every tier.** The quality profile ships `enablePostFX: true` and `enableDither: true` on LOW, MID and HIGH alike — tiers differ only in `msaaSamples` (HIGH 4 / MID 2 / LOW 0). It merges into the SAME fullscreen pass as bloom (a few ALU ops — effectively free) and kills the dark-gradient banding that reads as posterized color on mobile OLED. Never gate it on tier at a call site.
 - **Bloom intensity `0.06` is the hero-preset ceiling.** Higher = glow-spam. Raise `luminanceThreshold` to gate harder if you need more visible bloom. The night preset ships `0.38` by design — its own ceiling, not a license to raise the hero's.
 - **Custom `ShaderMaterial` only on hero elements.** No `MeshBasicMaterial` / `MeshStandardMaterial` for hero content. See `ether-threejs`.
-- **Brand tokens through uniforms.** Pull colors from your site's constants module. If tokens are mirrored in CSS, update both when a color changes.
+- **Brand tokens through uniforms.** Pull colors from your site's constants module — the engine never names a color. If tokens are mirrored in CSS, update both when a color changes.
 - **Wire `uTime` through the scene tick.** Material uniforms updated from `tick()` or via a wrapper's `tickUniforms`. Never via setInterval.
 - **Add `precision highp float;`** at the top of fragment shaders explicitly — three.js prepends it by default, but stating it inline keeps the intent durable across pipeline changes.
 
@@ -83,5 +86,5 @@ Don't promote site shaders to the engine without a generalization pass (uniform-
 ## Files
 
 - `SKILL.md` — this file (the script).
-- `recipes.md` — nine numbered technique recipes.
+- `recipes.md` — nine numbered technique recipes, each ending in a file + symbol citation index.
 - `evals/triggers.json` — should/shouldn't-trigger regression set for the description.

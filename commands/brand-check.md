@@ -1,11 +1,11 @@
 ---
 description: Verify a page or component against the repo's brand reference document — colors, fonts, logo usage, voice.
-argument-hint: "[file or URL — defaults to the built site] [path to the brand doc]"
+argument-hint: "[file or URL — defaults to the build CLAUDE.md names] [path to the brand doc]"
 ---
 
 Audit the target against the brand reference document. Resolve the brand doc in this order: the second argument if given; the path `CLAUDE.md` names as the brand reference; else `brand-assets.md` at the repo root. If none exists, stop and say so — never audit against remembered or assumed colors.
 
-Target: the first argument (default to the built `dist/index.html`, or the live site if the repo names one).
+Target: the first argument. With no argument, resolve it from `CLAUDE.md`: use the path it names as the active build (its "Active build" line, or whatever it calls the app currently being worked on) and audit that build's output. If `CLAUDE.md` names no build path and no argument was given, ask which target to audit rather than guessing one.
 
 Read the brand doc first and extract: the palette (background, primary / secondary / tertiary accents, muted, text), the type stack (display and body faces, weights), logo rules, and voice adjectives. Then check each item and report pass/fail/observation:
 

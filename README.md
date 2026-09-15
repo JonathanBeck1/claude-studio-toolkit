@@ -49,12 +49,12 @@ suites for the skill descriptions — see [Evals](#evals).
 
 | Command | Does |
 |---|---|
-| `/ship` | premium-review → triage → conventional commit → push → offer a PR. Never commits before you confirm the message. |
-| `/audit` | Detects what's in the diff (scene, styling, logic, docs) and runs the matching audits. Report only. |
+| `/ship` | premium-review → triage → conventional commit → push → offer a PR. Never commits before you confirm the message; commit bodies carry no attribution trailers. |
+| `/audit` | Detects what's in the diff (scene, styling, logic, docs) and runs the matching audits, on the same scope rule `premium-review` defines. Report only. |
 | `/threejs-audit` | Reviews three.js code against the `ether-threejs` slop checklist. Report only. |
-| `/brand-check` | Audits a page against your repo's brand document — colors, type, logo, voice. Refuses to audit from remembered colors. |
+| `/brand-check` | Audits a page against the brand reference your `CLAUDE.md` names — colors, type, logo, voice. Refuses to audit from remembered colors. |
 | `/handoff` | Writes a structured session-handoff file so a cold session resumes without the transcript. |
-| `/new-plan` | Scaffolds a plan file with the canonical structure. Doesn't pre-fill decisions. |
+| `/new-plan` | Scaffolds a phase plan for work that spans sessions — the exception, not the routine. Doesn't pre-fill decisions, and writes into the plans directory your repo already uses. |
 | `/onboard` | Runs the `studio-onboard` ritual. |
 
 ### Agents (`agents/`)
@@ -73,13 +73,13 @@ The shape of a `premium-review` result (illustrative):
 Verdict: NEEDS VISUAL VERIFICATION
 Branch: feat/hero-rim  •  Files audited: 3
 
-## Should fix (before client-facing)
+## Should fix (before it ships)
 - src/scene/HeroScene.ts:212 — bloom intensity raised to 0.14; the hero preset's ceiling is 0.06
   Why: above ~0.1 the whole bright area halos. Raise luminanceThreshold to gate harder instead.
 
 ## Passed
 - threejs-audit: HeroSculpture.ts — custom ShaderMaterial, DPR cap present, composer MSAA wired
-- brand-check: colors resolve to tokens, display face matches the brand doc
+- brand-check: colors resolve to tokens, display face matches the brand reference
 - ship-readiness: no stray logs, no secrets, diff scoped to the task
 
 ## Before READY
@@ -94,9 +94,9 @@ Remind-only — they print, never block.
 |---|---|---|
 | `threejs-reminder.sh` | PostToolUse (Edit/Write) | A scene file is touched → invoke `ether-threejs`, run `premium-review` before reporting complete |
 | `kit-drift-reminder.sh` | PostToolUse (Edit/Write) | Engine source is touched → sync the engine README and the matching skill in the same PR |
-| `premium-review-reminder.sh` | PreToolUse (`git commit`) | Staged files include client-deliverable paths → confirm `premium-review` ran |
+| `premium-review-reminder.sh` | PreToolUse (Bash) | The command is a `git commit` and staged files include deliverable paths → confirm `premium-review` ran |
 | `plan-mode-nudge.sh` | PostToolUse (Edit/Write) | Fourth edit of a session → one-shot nudge toward Plan mode and a worktree |
-| `random-tip.sh` | SessionStart | One rotating Claude Code habit per session |
+| `random-tip.sh` (in `scripts/`) | SessionStart | One rotating Claude Code habit per session |
 
 Path patterns are environment-overridable: `STUDIO_SCENE_GLOB`
 (default `*/src/scene/*`), `STUDIO_ENGINE_GLOB` (default `*/ether/src/*`),

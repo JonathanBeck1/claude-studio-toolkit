@@ -1,5 +1,7 @@
 # Raymarched SDF Hero
 
+> **Status: generic three.js recipe. Nothing here is drawn from the engine or from a shipped scene.** Every identifier below — the shaders, the scene, the uniforms, the two example colors — is defined in this file and exists nowhere else. `ether` ships no raymarcher and no SDF primitives, and the one hero this library was written alongside is an extruded, rim-shaded sculpture, not a raymarched field. Treat this as a self-contained starting point to adapt, not as a description of existing code, and do not expect an import to resolve any of it.
+
 ## When to use
 
 Hero canvases where the defining quality is organic, continuously smooth form — shapes that morph, merge, and breathe without seams — and where polygon-based geometry would require either a prohibitively high face count or a baked normal-map trick that falls apart on close inspection. Raymarched SDFs are the right tool when the form itself is the concept: metaball clusters, smooth-union compositions that feel like wet clay pressing together, procedural terrains with infinite-detail silhouettes.
@@ -10,7 +12,7 @@ Wrong for: scenes with many distinct objects — every ray must evaluate every S
 
 ## What it gives you
 
-A hero form defined entirely in math: smooth-union merging between displaced spheres that warble organically over time, shaded with a Lambert + fresnel-like color ramp using two brand accents (violet/teal in the example) palette. The surface rotates slowly, two lobes pulsing and blending at their junction. Because there are no polygons, the silhouette is infinitely crisp at any resolution, and the smooth-union seam is analytically smooth — no hard edge where the meshes would intersect. The background pixels `discard` cleanly, so the form composites over whatever layer lives beneath it (particles, type, a dark field).
+A hero form defined entirely in math: smooth-union merging between displaced spheres that warble organically over time, shaded with a Lambert term plus a fresnel-like ramp between two accent colors (violet and teal here — placeholders, swap in your own). The surface rotates slowly, two lobes pulsing and blending at their junction. Because there are no polygons, the silhouette is infinitely crisp at any resolution, and the smooth-union seam is analytically smooth — no hard edge where the meshes would intersect. The background pixels `discard` cleanly, so the form composites over whatever layer lives beneath it (particles, type, a dark field).
 
 ## Primer — signed distance fields and raymarching
 
@@ -22,16 +24,24 @@ Smooth minimum (`smoothMin`) is a key building block — it blends the union of 
 
 ## Required setup
 
-Render the SDF to a fullscreen quad — a flat `PlaneGeometry(2, 2)` in NDC coordinates rendered without any camera transform. The SDF raymarcher reconstructs the view ray itself from UV coordinates, so the geometry is just a surface to run the fragment shader across. The SDF scene lives in a separate `THREE.Scene` (`heroScene`) so its render order and depth state don't interfere with the main scene.
+Render the SDF to a fullscreen quad — a flat `PlaneGeometry(2, 2)` in NDC coordinates rendered without any camera transform. The SDF raymarcher reconstructs the view ray itself from UV coordinates, so the geometry is just a surface to run the fragment shader across. Give the SDF its own `THREE.Scene` so its render order and depth state don't interfere with the main scene.
+
+The two shader sources are the ones written out under **Code recipe** below — author them as `.glsl` files in your project and import them with `?raw`, or inline them as template literals. There is no shared module to import them from.
 
 ```js
 import * as THREE from 'three';
 
+// Your own files — see the vertex and fragment shaders under Code recipe.
+import heroVert from './shaders/hero.vert.glsl?raw';
+import heroFrag from './shaders/hero.frag.glsl?raw';
+
+const heroScene = new THREE.Scene();
+
 const quadGeometry = new THREE.PlaneGeometry(2, 2); // covers NDC -1..1
 
 const quadMaterial = new THREE.ShaderMaterial({
-  vertexShader: heroVertGLSL,
-  fragmentShader: heroFragGLSL,
+  vertexShader: heroVert,
+  fragmentShader: heroFrag,
   uniforms: {
     uTime:             { value: 0 },
     uResolution:       { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
@@ -265,7 +275,7 @@ function animate(elapsed) {
 
 ### Compositing with particles
 
-The SDF hero renders at `renderOrder = -1`, so it always draws before the particle system at the default `renderOrder = 0`. For more explicit control — separate post-processing, bloom applied selectively to the SDF but not the particles — render to a separate `THREE.WebGLRenderTarget` and composite manually in a final fullscreen pass. See `techniques/postprocessing-chain.md` for the multi-pass pattern.
+The SDF hero renders at `renderOrder = -1`, so it always draws before the particle system at the default `renderOrder = 0`. For more explicit control — bloom applied selectively to the SDF but not the particles — render to a separate `THREE.WebGLRenderTarget` and composite manually in a final fullscreen pass. Note that this is a hand-rolled arrangement: the composer in `techniques/postprocessing-chain.md` grades the whole frame in one fused pass and has no notion of per-object selection.
 
 ## Tunable parameters
 
@@ -275,8 +285,8 @@ The SDF hero renders at `renderOrder = -1`, so it always draws before the partic
 | `uSurfaceThreshold` | 0.001 | 0.0005 – 0.005 | Hit distance below which the ray is considered to have struck the surface. Too small = misses at displacement peaks; too large = the surface looks puffy and inset from the true SDF iso-surface. |
 | `uDisplacement` | 0.3 | 0.0 – 0.8 | Amplitude of the sinusoidal warble applied to each sphere. At 0.0 the spheres are clean mathematical spheres; at 0.6+ they start to look like spiky coral. Keep below 0.5 for a shape that reads as organic-but-controlled. |
 | `uRotationSpeed` | 0.2 | 0.0 – 1.0 | Speed of the Y-axis field rotation (radians / second). 0.2 reads as breathing; above 0.6 it reads as spinning and loses the ambient feel. |
-| `uColorA` | `#8b5cf6` (violet) | your brand accents | The color at low view-angle incidence (front-facing pixels). Swapping `uColorA` and `uColorB` inverts the fresnel ramp — teal on-face, violet on rim. |
-| `uColorB` | `#2dd4bf` (teal) | your brand accents | The color at high view-angle incidence (rim/silhouette pixels). The violet → teal transition is one studio's established fresnel cue — pick your own pair. |
+| `uColorA` | `#8b5cf6` (violet) | your own accents | The color at low view-angle incidence (front-facing pixels). Swapping `uColorA` and `uColorB` inverts the fresnel ramp — teal on-face, violet on rim. |
+| `uColorB` | `#2dd4bf` (teal) | your own accents | The color at high view-angle incidence (rim/silhouette pixels). Both defaults are placeholders chosen to make the ramp legible in a screenshot — pick a pair that belongs to the work. |
 
 ## Common pitfalls
 

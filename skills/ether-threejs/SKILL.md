@@ -16,7 +16,7 @@ Invoke this skill before any three.js work on premium-tier deliverables. The ski
 1. Read `slop-checklist.md` first. If your planned approach trips any checkbox, redesign before coding.
 2. Read `references.md` to find a studio working in the relevant aesthetic. Open its live site for ground truth.
 3. Read the relevant `techniques/` file for a code recipe and required tuning parameters.
-4. Pull GLSL snippets from `shaders/` and import them via `?raw` (`vite-plugin-glsl` is configured but unused — every GLSL import in the codebase uses `?raw`).
+4. Pull GLSL snippets from `shaders/` and import them via `?raw`. `vite-plugin-glsl` is registered and active in the Vite config, but `?raw` returns the file verbatim and bypasses it — every GLSL import in the reference codebase uses `?raw`, so none of them get `#include` expansion. Drop the `?raw` on an import when you do want the plugin to resolve includes.
 5. After writing code, re-run the slop checklist. Capture a screenshot. Have the user review before committing the rendered scene.
 
 ## Index
@@ -25,7 +25,7 @@ Invoke this skill before any three.js work on premium-tier deliverables. The ski
 - **`slop-checklist.md`** — concrete anti-patterns. Run before commit.
 - **`performance.md`** — budgets, profiling techniques, mobile checklist
 - **`techniques/`** — one file per reusable technique with code recipes
-- **`shaders/`** — reusable `.glsl` snippets, imported via `?raw`
+- **`shaders/`** — `.glsl` snippets, imported via `?raw`. `dither.glsl` is the chunk the engine ships as `ether/shaders`; `fresnel.glsl`, `curl-noise.glsl` and `color-grade.glsl` are standalone reference snippets the engine does not ship (the engine grades through `loadLUT` and `LUT3DEffect`).
 
 ## Maintenance
 

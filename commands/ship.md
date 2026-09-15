@@ -1,5 +1,5 @@
 ---
-description: End-of-build flow for client deliverable changes — premium-review, commit, push.
+description: End-of-build flow for deliverable changes — premium-review, commit, push.
 argument-hint: [optional commit message, otherwise drafted from the diff]
 ---
 
@@ -16,7 +16,7 @@ Steps in order — do not skip:
    - [WARN] **Should fix** → list them, ask user to confirm shipping anyway OR pause to fix.
    - [NOTE] **Passed / Optional** → proceed.
 
-4. **Draft commit message** in conventional-commit format (`type(scope): description`). Types: `feat`, `fix`, `polish`, `chore`, `docs`, `refactor`. Keep subject under 72 chars. Add a body if the diff touches >2 files. Always include the co-author footer your harness specifies (e.g. `Co-Authored-By: Claude <noreply@anthropic.com>`).
+4. **Draft commit message** in conventional-commit format (`type(scope): description`). Types: `feat`, `fix`, `polish`, `chore`, `docs`, `refactor`. Keep subject under 72 chars. Add a body if the diff touches >2 files. The message describes the change and nothing else — no attribution, co-author, or generated-by trailers of any kind.
 
 5. **Show the message + diff summary** and ask for explicit confirmation before committing.
 
@@ -24,7 +24,7 @@ Steps in order — do not skip:
 
 7. **Push to remote.** If the branch has no upstream, use `git push -u origin <branch>`. Report the remote ref.
 
-8. **Offer to open a PR.** If the branch isn't `master`/`main`, ask whether to open a PR via `gh pr create`. Don't open it without confirmation. Use the canonical PR template:
+8. **Offer to open a PR.** If the branch isn't the repo's default branch, ask whether to open a PR via `gh pr create`. Don't open it without confirmation. Use this PR template:
    ```
    ## Summary
    <1-3 bullets>
@@ -32,6 +32,6 @@ Steps in order — do not skip:
    ## Test plan
    - [ ] <verification steps>
    ```
-   Body must include the Claude Code footer.
+   The body is the summary and the test plan — no attribution or generated-by trailers.
 
-Do not skip the premium-review step. Do not commit before user confirms the message. Do not push to master without explicit instruction.
+Do not skip the premium-review step. Do not commit before user confirms the message. Do not push to the default branch without explicit instruction.

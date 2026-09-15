@@ -20,7 +20,6 @@
     "PreToolUse": [
       {
         "matcher": "Bash",
-        "if": "Bash(git commit*)",
         "hooks": [
           { "type": "command", "command": "bash \"${CLAUDE_PLUGIN_ROOT}\"/hooks/premium-review-reminder.sh" }
         ]

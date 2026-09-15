@@ -1,208 +1,180 @@
-# Scroll Camera Choreography (GSAP ScrollTrigger + Lenis)
+# Scroll Camera Choreography (`ether/scroll` over GSAP ScrollTrigger + Lenis)
 
 ## When to use
 
 Pages where the 3D scene is the narrative — not a background decoration — and the user's scroll position is the editorial timeline. Camera choreography is the right pattern when: (a) there are 2–5 distinct "beats" the scene must hit as the user reads through the page, (b) those beats need to feel authored (not just zoom in/out), and (c) the user should never be surprised by a cut — the transition between camera positions should always feel proportional to how fast they scroll.
 
-This is the right pattern for: a homepage hero sequence where the product story unfolds over four scroll sections, case-study covers where the 3D object rotates to reveal a back-panel detail as the user scrolls past the fold, any page where the camera path is the user's journey through a product or concept.
+This is the right pattern for: a homepage hero sequence where the story unfolds over several scroll sections, case-study covers where the 3D object rotates to reveal a back-panel detail as the user scrolls past the fold, any page where the camera path is the user's journey through a product or concept.
 
-This is the wrong pattern for: ambient hero scenes where the camera should orbit slowly on its own and scroll is irrelevant (use a time-driven `requestAnimationFrame` rotation instead), pages with very long bodies of text where pinning the canvas would trap the user in an unresponsive scroll experience, any context where the user expects native scroll momentum behavior and smooth-scroll inertia would feel disorienting (utility pages, article bodies, docs).
+This is the wrong pattern for: ambient hero scenes where the camera should orbit slowly on its own and scroll is irrelevant (use a time-driven rotation in the scene's tick), pages with very long bodies of text where pinning the canvas would trap the user in an unresponsive scroll experience, any context where the user expects native scroll momentum and smooth-scroll inertia would feel disorienting (utility pages, article bodies, docs).
 
-**When scroll-driven camera is overkill:** if the "choreography" is just a constant slow dolly-in from z=5 to z=2 while the hero text fades out, a single `ScrollTrigger.to(camera.position, { z: 2 })` without pinning or Lenis is sufficient. The full setup below is for multi-beat authored paths.
+**When scroll-driven camera is overkill:** if the "choreography" is a constant slow dolly-in while the hero text fades out, one `createScrollProgress` feeding a lerped camera z in the scene's tick is sufficient. Reach for a pinned, scrubbed GSAP timeline only for multi-beat authored paths.
 
-## What it gives you
+## Use the engine's bridge, not a hand-rolled one
 
-A pinned canvas that stays fixed in the viewport while the user scrolls through 4× viewport heights of content. The camera traces a keyframed spline path — position and `lookAt` target both interpolate through the keyframes — while shader uniforms on materials drive in sync from the same GSAP timeline. Scroll inertia from Lenis makes the progression feel physical rather than mechanical: the camera "catches up" to scroll position rather than snapping. The result reads like a directed camera move in a film: the user is in control of pace, but the framing is authored.
+`ether/scroll` owns the Lenis ↔ ScrollTrigger integration. Two exports carry the whole pattern:
 
-## Required setup
+- **`ScrollBridge`** wraps a Lenis instance and owns the three things site code keeps getting wrong: registering the ScrollTrigger plugin (idempotently, so HMR and repeated scene construction don't churn it), wiring `lenis.on('scroll', ScrollTrigger.update)` so ScrollTrigger reads the smoothed position, and converting the monotonic **seconds** a scene tick receives into the **milliseconds** Lenis expects. Methods: `raf(timeSeconds)`, `scrollTo(target, opts)`, `destroy()`.
+- **`createScrollProgress(onProgress, options)`** makes one scrubbed ScrollTrigger that maps scroll progress `0..1` to a callback — the reusable "scroll drives a 3D value" shape. It registers the plugin on first use, so it also works with no bridge at all (the native-scroll path). Returns `{ trigger, kill() }`; call `kill()` in `Scene.dispose`.
 
-Install:
+Event-style triggers — class and attribute toggles on enter/leave, section reveals — stay in site code. They are site-specific and not worth abstracting.
 
-```bash
-npm install gsap lenis
+### Smooth scroll is optional, and tier-gated
+
+Construct `ScrollBridge` only when the quality tier enables smooth scroll. Low-end tiers and reduced-motion users run native scroll, which ScrollTrigger reads by default — nothing else has to change, because `createScrollProgress` registers the plugin itself. Touch is *not* excluded: Lenis `syncTouch` smooths on top of native iOS momentum rather than hijacking it, so touch feeds ScrollTrigger the same rAF-synced position desktop does.
+
+```ts
+import { ScrollBridge, createScrollProgress, type ScrollProgressTrigger } from 'ether/scroll';
+
+private scroll: ScrollBridge | null = null;
+
+private initScrollBridge(): void {
+  this.scroll = this.quality.enableSmoothScroll
+    ? new ScrollBridge({
+        duration: LENIS_DURATION,
+        easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+        smoothWheel: true,
+        wheelMultiplier: LENIS_WHEEL_MULTIPLIER,
+        touchMultiplier: LENIS_TOUCH_MULTIPLIER,
+        syncTouch: true,
+        touchInertiaExponent: LENIS_TOUCH_INERTIA_EXPONENT,
+      })
+    : null;
+}
 ```
 
-`gsap` includes the ScrollTrigger plugin. `lenis` is the official package name as of 2024 — the previous `@studio-freight/lenis` package is deprecated and should not be used.
+Options are forwarded verbatim to `new Lenis(...)`. Feel tuning (duration, easing, multipliers) belongs in the consuming site's constants, not in the engine.
 
-### 1. Lenis initialization
+### Lifecycle: build the bridge at enter, not in the constructor
 
-Lenis adds smooth inertia to native scroll. The browser's actual scroll position follows a lerped curve behind the user's input velocity, which is what makes the camera feel like it has weight.
+This is the trap. Lenis intercepts wheel input from the moment it exists, but it only moves the page when its `raf` is pumped — and a scene's tick only runs once it is the manager's active scene, *after* preload. A bridge built in the scene constructor therefore eats every wheel event for the whole preload window and then dumps the accumulated delta as a lurch when ticking starts. Build it at the start of `enterTransition`, pump it in `tick`, tear it down in exit/dispose. Until enter, native scroll handles input perfectly well.
 
-```js
-import Lenis from 'lenis';
+```ts
+tick(elapsedSeconds: number): void {
+  this.scroll?.raf(elapsedSeconds); // seconds in — the bridge converts to ms
+  // ...camera / uniform updates
+}
 
-const lenis = new Lenis({
-  duration: 1.2,          // seconds — controls inertia "weight." 0.6 = snappy; 1.8 = heavy/luxury
-  easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)), // expo.out — fast start, long tail
-  orientation: 'vertical',
-  smoothWheel: true,
-  wheelMultiplier: 1.0,   // 1.0 = native wheel velocity. Lower = slower scroll-per-tick
-  touchMultiplier: 2.0,   // touch devices need 2× velocity to feel responsive
-});
+exit(): void {
+  this.scroll?.destroy();
+  this.scroll = null;
+}
 ```
 
-### 2. GSAP ticker bridge
+There is one RAF loop: the render loop that ticks the scene. Do not add a second `requestAnimationFrame` for Lenis, and do not call `lenis.raf()` anywhere else.
 
-Lenis must receive its ticks from GSAP's internal ticker, not from a separate `requestAnimationFrame`. Two RAF loops interfere — see Pitfalls. This is the required integration:
+### Disable GSAP lag smoothing at the site level
 
-```js
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+GSAP clamps its ticker delta to 33 ms after any frame longer than 500 ms, which turns scrubbed tweens into slow motion on a slow renderer while the rest of the scene eases on raw frame time. `ScrollBridge` does **not** do this for you — it is a site-level decision, one line in the module that owns the scene:
 
-gsap.registerPlugin(ScrollTrigger);
-
-gsap.ticker.add((time) => {
-  lenis.raf(time * 1000); // GSAP ticker passes seconds; Lenis.raf() expects milliseconds
-});
-
-// Disable GSAP's lag smoothing — Lenis handles inertia itself.
-// If both are active, GSAP's lag smoothing fights Lenis's easing and produces stutter.
+```ts
 gsap.ticker.lagSmoothing(0);
 ```
 
-### 3. ScrollTrigger scroller proxy
+### No `scrollerProxy` — you do not need one
 
-ScrollTrigger reads scroll position from the DOM's native `scrollTop`. Lenis intercepts native scroll and maintains its own virtual scroll value. Without the proxy, ScrollTrigger reads a scroll position that is always slightly ahead of Lenis's smoothed position — the timeline progress stutters or lags by one frame. The proxy bridges them:
-
-```js
-ScrollTrigger.scrollerProxy(document.body, {
-  scrollTop(value) {
-    if (arguments.length) {
-      // ScrollTrigger is setting the scroll position (e.g., on refresh)
-      lenis.scrollTo(value, { immediate: true });
-    }
-    return lenis.scroll; // return Lenis's smoothed virtual position
-  },
-  getBoundingClientRect() {
-    return { top: 0, left: 0, width: window.innerWidth, height: window.innerHeight };
-  },
-});
-
-// When Lenis updates, tell ScrollTrigger to re-evaluate trigger positions
-lenis.on('scroll', ScrollTrigger.update);
-
-// All subsequent ScrollTrigger instances use document.body as the scroller
-ScrollTrigger.defaults({ scroller: document.body });
-```
-
-### 4. prefers-reduced-motion handling
-
-Lenis smooth scroll is vestibular motion. Disable it when the user has opted out:
-
-```js
-const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-if (prefersReduced) {
-  lenis.destroy();
-  // ScrollTrigger still works — it falls back to native scroll position.
-  // Camera animation still plays, but without smooth inertia — it snaps directly
-  // to the scroll-proportional position, which is fine for reduced-motion users.
-}
-```
+`ScrollTrigger.scrollerProxy` exists for scroll that never reaches the document: a transform-based custom wrapper, a scroll container that isn't the window. Lenis in its default configuration moves the real document scroll position, so ScrollTrigger's native reads are already correct; the only wiring needed is `lenis.on('scroll', ScrollTrigger.update)`, which `ScrollBridge` does in its constructor. Adding a proxy on top of that is a second source of truth for scroll position and a reliable way to produce the one-frame lag it claims to fix.
 
 ## Code recipe
 
-### Full wiring — complete setup module
+### Scroll progress driving 3D values
 
-```js
-// scroll-setup.js
-import Lenis from 'lenis';
-import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+The engine shape: one trigger per value, each writing a *target* that the scene's tick lerps toward. Smoothing happens in your tick, not in the trigger.
 
-gsap.registerPlugin(ScrollTrigger);
+```ts
+import * as THREE from 'three';
+import { createScrollProgress, type ScrollProgressTrigger } from 'ether/scroll';
 
-export function initScrollSystem() {
-  const lenis = new Lenis({
-    duration: 1.2,
-    easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
-    orientation: 'vertical',
-    smoothWheel: true,
-    wheelMultiplier: 1.0,
-    touchMultiplier: 2.0,
-  });
+private cameraTrigger: ScrollProgressTrigger | null = null;
+private cameraTarget = 0;
+private cameraProgress = 0;
 
-  // Tick Lenis from GSAP — single RAF loop
-  gsap.ticker.add((time) => {
-    lenis.raf(time * 1000);
-  });
-  gsap.ticker.lagSmoothing(0);
+private setupScrollTriggers(): void {
+  // Full-page progress: trigger defaults to 'body', start to 'top top'.
+  this.cameraTrigger = createScrollProgress(
+    (progress) => { this.cameraTarget = progress; },
+    { end: 'bottom bottom' },
+  );
 
-  // Bridge Lenis virtual scroll to ScrollTrigger
-  ScrollTrigger.scrollerProxy(document.body, {
-    scrollTop(value) {
-      if (arguments.length) {
-        lenis.scrollTo(value, { immediate: true });
-      }
-      return lenis.scroll;
-    },
-    getBoundingClientRect() {
-      return { top: 0, left: 0, width: window.innerWidth, height: window.innerHeight };
-    },
-  });
+  // Scoped to a section — pass trigger/start/end explicitly.
+  this.revealTrigger = createScrollProgress(
+    (progress) => { this.revealTarget = progress; },
+    { trigger: '.approach', start: 'top bottom', end: 'bottom top' },
+  );
+}
 
-  lenis.on('scroll', ScrollTrigger.update);
-  ScrollTrigger.defaults({ scroller: document.body });
+tick(elapsedSeconds: number, dt: number): void {
+  this.scroll?.raf(elapsedSeconds);
 
-  // Reduced-motion: destroy Lenis, ScrollTrigger falls back to native scroll
-  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  if (prefersReduced) {
-    lenis.destroy();
-  }
+  // The easing lives here. Frame-rate independent lerp.
+  this.cameraProgress += (this.cameraTarget - this.cameraProgress) * (1 - Math.exp(-6 * dt));
+  this.camera.position.z = THREE.MathUtils.lerp(CAMERA_Z_START, CAMERA_Z_END, this.cameraProgress);
+}
 
-  return lenis;
+dispose(): void {
+  this.cameraTrigger?.kill();
 }
 ```
 
-### Scroll-driven camera timeline — 4-beat path
+**Do not expect `scrub` to smooth this.** `createScrollProgress` builds an `onUpdate`-only trigger, and GSAP only constructs its scrub tween for a trigger with an attached `animation` — `onProgress` always receives raw progress. Omit `scrub` and smooth in your own tick, as above. Some values *want* raw progress: anything page-anchored (an element that must track the scroll pixel-for-pixel) will visibly swim against the page if you smooth it.
 
-Four keyframes define the camera's authored positions and `lookAt` targets. GSAP scrubs through them as the user scrolls, driving both `camera.position` and a `lookTarget` vector that feeds `camera.lookAt()` each frame.
+### Reduced motion
+
+Smooth scroll and camera motion are vestibular motion; opacity is not. The split that works: skip the bridge and the motion triggers, keep the alpha/reveal ones, and snap section reveals on.
+
+```ts
+if (REDUCED_MOTION) {
+  // createScrollProgress normally registers the plugin. On this path it is
+  // skipped, so any raw ScrollTrigger.create calls below need it explicitly.
+  gsap.registerPlugin(ScrollTrigger);
+  for (const selector of revealSections) {
+    document.querySelector(selector)?.classList.add('is-visible');
+  }
+} else {
+  // drift / camera / reveal triggers
+}
+```
+
+Failing to handle `prefers-reduced-motion` on scroll-driven camera work is an accessibility violation under WCAG 2.1 criterion 2.3.3 (Animation from Interactions). It is not optional.
+
+### Pinned, scrubbed multi-beat timeline (raw GSAP)
+
+The engine does not wrap this — a pinned timeline is page choreography, not a reusable 3D primitive. Use it when you genuinely have authored beats rather than one monotonic progress value. `ScrollBridge` still supplies the smooth scroll underneath; nothing here needs a proxy.
 
 ```js
-// camera-choreography.js
 import * as THREE from 'three';
 import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
-// Define 4 keyframes — each has a camera position and a lookAt target in world space.
-// Edit these first during art direction; the easing and scrub handle the feel.
 const cameraPath = [
-  { pos: new THREE.Vector3(0, 0, 5),   look: new THREE.Vector3(0, 0, 0)  }, // beat 0: intro
-  { pos: new THREE.Vector3(3, 1, 4),   look: new THREE.Vector3(1, 0, 0)  }, // beat 1: reveal
-  { pos: new THREE.Vector3(2, -1, 2),  look: new THREE.Vector3(0, 0, -1) }, // beat 2: detail
-  { pos: new THREE.Vector3(-2, 0, 3),  look: new THREE.Vector3(0, 1, 0)  }, // beat 3: outro
+  { pos: new THREE.Vector3(0, 0, 5),  look: new THREE.Vector3(0, 0, 0)  }, // beat 0: intro
+  { pos: new THREE.Vector3(3, 1, 4),  look: new THREE.Vector3(1, 0, 0)  }, // beat 1: reveal
+  { pos: new THREE.Vector3(2, -1, 2), look: new THREE.Vector3(0, 0, -1) }, // beat 2: detail
+  { pos: new THREE.Vector3(-2, 0, 3), look: new THREE.Vector3(0, 1, 0)  }, // beat 3: outro
 ];
 
-export function buildCameraTimeline(camera, bloomEffect, particleMaterial) {
+export function buildCameraTimeline(camera, bloom) {
   const lookTarget = new THREE.Vector3();
 
   const tl = gsap.timeline({
     scrollTrigger: {
-      trigger: '#hero-section',        // the outermost scroll container
-      start: 'top top',                // begin when the section hits the top of viewport
-      end: '+=400%',                   // 4 viewport heights of pinned scroll travel
-      pin: '#canvas-container',        // the element to pin (the WebGL canvas wrapper)
-      scrub: 1.0,                      // lerp factor: 0 = instant snap, 1 = 1-second catch-up
-      anticipatePin: 1,                // pre-calculate pin position to avoid a one-frame jump
+      trigger: '#hero-section',
+      start: 'top top',
+      end: '+=400%',            // 4 viewport heights of pinned travel
+      pin: '#canvas-container',
+      scrub: 1.0,               // real smoothing here — the timeline HAS an animation
+      anticipatePin: 1,
     },
   });
 
-  // Animate through keyframes 1, 2, 3 (keyframe 0 is the starting state)
   cameraPath.forEach((kf, i) => {
     if (i === 0) return; // first keyframe is where the camera already lives
-
     const prev = cameraPath[i - 1];
 
     tl.to(camera.position, {
-      x: kf.pos.x,
-      y: kf.pos.y,
-      z: kf.pos.z,
+      x: kf.pos.x, y: kf.pos.y, z: kf.pos.z,
       duration: 1,
       ease: 'none', // linear through each beat — scrub handles the feel
       onUpdate: () => {
-        // Interpolate lookAt within this segment.
-        // tl.progress() runs 0→1 over the full timeline.
-        // Local segment progress = (global progress * numSegments) - segmentIndex
         const segmentProgress = Math.max(0, Math.min(1,
           tl.progress() * (cameraPath.length - 1) - (i - 1)
         ));
@@ -212,37 +184,23 @@ export function buildCameraTimeline(camera, bloomEffect, particleMaterial) {
     });
   });
 
-  // ── Drive scene-wide shader uniforms from the same timeline ─────────────────
-
-  // Section 2: bloom intensifies as the object is revealed close
-  tl.to(bloomEffect, {
-    intensity: 0.8,
-    duration: 1,
-    ease: 'power2.inOut',
-  }, 1); // position "1" = start of the second beat segment
-
-  // Section 3: particle field scale expands as camera pulls to detail view
-  tl.to(particleMaterial.uniforms.uFieldScale, {
-    value: 1.5,
-    duration: 1,
-    ease: 'none',
-  }, 2); // position "2" = start of the third beat segment
+  // Drive an effect handle from the same timeline. createHeroComposer returns
+  // `bloom` alongside `composer` — keep it rather than only `.composer`.
+  tl.to(bloom, { intensity: 0.12, duration: 1, ease: 'power2.inOut' }, 1);
 
   return tl;
 }
 ```
 
-### ScrollTrigger.refresh() — call after layout settles
+Note that bloom target: the hero preset's `0.06` is a restraint ceiling, so a scroll-driven bloom swell should stay near it. See `techniques/postprocessing-chain.md`.
+
+### `ScrollTrigger.refresh()` after layout settles
 
 ```js
-// After all async content is loaded and fonts are rendered, refresh ScrollTrigger
-// so it knows the final section heights. Call once after page load.
 window.addEventListener('load', () => {
-  // Slight delay to let the browser reflow after load
-  setTimeout(() => ScrollTrigger.refresh(), 100);
+  setTimeout(() => ScrollTrigger.refresh(), 100); // let fonts and images reflow
 });
 
-// Also refresh on resize (debounced — avoid firing on every pixel during drag)
 let resizeTimer;
 window.addEventListener('resize', () => {
   clearTimeout(resizeTimer);
@@ -250,32 +208,13 @@ window.addEventListener('resize', () => {
 });
 ```
 
-### Per-frame render loop (with composer)
-
-When using the postprocessing chain, `composer.render()` replaces `renderer.render()`. ScrollTrigger and Lenis update happens inside `gsap.ticker.add()` — no additional RAF needed:
-
-```js
-// The GSAP ticker drives both Lenis and the animation timeline.
-// Your render loop just needs to produce a frame.
-function animate() {
-  requestAnimationFrame(animate);
-  composer.render(deltaTime); // or renderer.render(scene, camera) if no postprocessing
-}
-
-animate();
-```
-
-Note: `camera.lookAt()` is called inside the `onUpdate` callback of each timeline tween (above). The `animate()` loop does not need to call `camera.lookAt()` separately — GSAP's scrub handles the timing.
-
-### HTML structure (minimum)
+### HTML structure (pinned pattern only)
 
 ```html
 <div id="hero-section">              <!-- ScrollTrigger trigger and end marker -->
   <div id="canvas-container">        <!-- ScrollTrigger pins this element -->
     <canvas id="webgl-canvas"></canvas>
   </div>
-  <!-- 4 content sections that live BELOW the pinned canvas in scroll space -->
-  <!-- Their combined height drives the pinned scroll travel -->
   <section class="scene-section">Section A content</section>
   <section class="scene-section">Section B content</section>
   <section class="scene-section">Section C content</section>
@@ -290,45 +229,45 @@ Note: `camera.lookAt()` is called inside the `onUpdate` callback of each timelin
   height: 100vh;
 }
 
-#webgl-canvas {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
+#webgl-canvas { display: block; width: 100%; height: 100%; }
 
-.scene-section {
-  height: 100vh;
-  /* Content here is visible after the pin sequence ends */
-}
+.scene-section { height: 100vh; }
 ```
 
 ## Tunable parameters
 
-| Parameter | Default | Range | Effect |
-|---|---|---|---|
-| `lenis.duration` | `1.2` | 0.4 – 2.5 s | Inertia weight of smooth scroll. 0.6 reads as responsive/snappy; 1.2 reads as premium/weighted; 2.0 reads as heavy/dramatic. Higher values require more deliberate scroll gestures to reach the end of the sequence — test with real scroll input, not click-drag. |
-| `ScrollTrigger.scrub` | `1.0` | 0.1 – 3.0 | Catch-up lag for the camera following scroll progress. 0 = instant snap to scroll position (no GSAP easing applied). 1.0 = camera catches up over 1 second. At 1.0 with Lenis duration 1.2, you get two layers of inertia: Lenis smooths the scroll input, then scrub smooths the timeline response. Together this produces the "luxury" feel. Above 2.0 the camera starts to feel broken — it arrives visibly late to each beat. |
-| `end: '+=400%'` | `'+=400%'` | `'+=200%'` – `'+=600%'` | Total pinned scroll travel. 400% = 4 viewport heights to scrub through the 4-beat timeline. Increase to slow the pacing (more scroll per beat), decrease to speed it up. This is the first parameter to adjust when beats feel too fast or too slow to read. |
-| `lenis.wheelMultiplier` | `1.0` | 0.5 – 1.5 | Scales physical wheel input before Lenis's easing. Lower values slow the scroll per wheel tick, giving finer grain control over the camera timeline. Do not go below 0.5 — at very low values the sequence feels stuck and users lose confidence the scroll is working. |
-| `cameraPath` keyframes | (four authored positions) | any THREE.Vector3 | The actual camera choreography. These are the only values that are pure art direction — position each keyframe in scene space to frame the 3D object at the intended angle for each section. Start with z-axis dolly-in only (vary z, keep x and y fixed), then add lateral and vertical offsets once the basic pacing reads correctly. |
-| `anticipatePin` | `1` | 0 or 1 | When set to 1, ScrollTrigger pre-calculates the pin position slightly before it fires. Eliminates the one-frame positional jump that happens when a pinned element snaps to `position: fixed`. Set it to 1 and leave it — the cost is a single extra getBoundingClientRect call at initialization. |
+| Parameter | Where | Default | Range | Effect |
+|---|---|---|---|---|
+| Lenis `duration` | `ScrollBridge` options | site constant | 0.4 – 2.5 s | Inertia weight of smooth scroll. 0.6 reads responsive; ~1.2 reads weighted; 2.0 reads heavy. Higher values need more deliberate gestures to reach the end of a sequence — test with real scroll input, not click-drag. |
+| Lenis `wheelMultiplier` | `ScrollBridge` options | site constant | 0.5 – 1.5 | Scales wheel input before Lenis's easing. Lower gives finer grain over the camera timeline. Below 0.5 the sequence feels stuck and users lose confidence the scroll is working. |
+| Lenis `syncTouch` | `ScrollBridge` options | `true` on the smooth path | `true / false` | Smooths on top of native touch momentum instead of replacing it. This is the fix for choppy mobile scroll-to-3D; `touchInertiaExponent` shapes the post-flick glide and should be dialled on-device. |
+| Tick lerp rate | your `tick` | — | 4 – 12 | The real smoothing knob for `createScrollProgress` values. `1 - exp(-rate * dt)` keeps it frame-rate independent. Higher = tighter tracking; lower = more float. |
+| `createScrollProgress` `end` | trigger options | — | `'+=60%'` – `'bottom bottom'` | Scroll distance the 0..1 progress spans. First thing to adjust when a beat reads too fast or too slow. |
+| `ScrollTrigger.scrub` | pinned timeline only | `1.0` | 0.1 – 3.0 | Catch-up lag for a timeline that has an attached animation. With Lenis underneath you get two layers of inertia. Above 2.0 the camera arrives visibly late to each beat. **No effect on `createScrollProgress`.** |
+| `end: '+=400%'` | pinned timeline | `'+=400%'` | `'+=200%'` – `'+=600%'` | Total pinned travel. 400% = 4 viewport heights across a 4-beat timeline. |
+| `cameraPath` keyframes | pinned timeline | four authored positions | any `Vector3` | Pure art direction. Start with z-only dolly, then add lateral and vertical offsets once pacing reads. |
+| `anticipatePin` | pinned timeline | `1` | 0 or 1 | Pre-calculates the pin position, eliminating the one-frame jump when the element snaps to `position: fixed`. Set it and leave it. |
 
 ## Common pitfalls
 
-1. **Lenis ticked separately from the GSAP ticker.** If you call `lenis.raf(performance.now())` inside your own `requestAnimationFrame` loop while GSAP also runs its internal ticker, both loops compete for the same scroll state. Lenis may update after GSAP has already sampled scroll position for that frame, so the ScrollTrigger timeline progress lags by exactly one frame — the camera always trails the scroll by a visible amount that does not go away even with scrub tuning. The fix is to tick Lenis exclusively from `gsap.ticker.add()` and not call `requestAnimationFrame` for Lenis anywhere else in your codebase. Search for any calls to `lenis.raf()` outside the GSAP ticker and remove them.
+1. **Building the bridge in the scene constructor.** Lenis eats wheel events from the moment it exists but only moves the page when `raf` is pumped, and the tick doesn't run until the scene is active — after preload. The accumulated delta lands as a lurch on the first ticked frame. Build at `enterTransition` start. (This once presented as a blank canvas *and* an unscrollable page: a scene whose tick is skipped also stops pumping the bridge.)
 
-2. **`ScrollTrigger.refresh()` not called after layout changes.** ScrollTrigger measures section heights, trigger positions, and pin durations once at registration. If async content loads after registration — images that shift layout, fonts that reflow text, API responses that inject DOM — the captured measurements are stale. The camera timeline will advance past a beat too early or hold too long because the scroll positions no longer match what ScrollTrigger calculated. Call `ScrollTrigger.refresh()` after layout stabilizes: once 100ms after `window.load` to catch font and image reflow, and once on `resize` (debounced to 200ms to avoid firing on every pixel during a drag resize). If dynamic content loads asynchronously (e.g., after an API call), call `ScrollTrigger.refresh()` in the `.then()` callback after the content is injected.
+2. **A second RAF loop for Lenis.** If `lenis.raf(performance.now())` runs in its own `requestAnimationFrame` while the scene tick also pumps the bridge, both loops fight over the same scroll state and ScrollTrigger samples a position that is a frame stale — the camera trails scroll by an amount no scrub tuning removes. Pump the bridge from exactly one place: `Scene.tick`, in seconds.
 
-3. **Pin spacing causes unexpected layout shift downstream.** When ScrollTrigger pins `#canvas-container`, it inserts an invisible spacer `<div>` whose height equals the full pinned scroll travel (4 viewport heights for `end: '+=400%'`). Any content that follows `#hero-section` in the DOM will be pushed down by this spacer. If you lay out the page without accounting for the spacer, the footer and downstream sections jump when ScrollTrigger initializes. Two solutions: (a) accept the spacer and design the page assuming `#hero-section` will be 5× viewport height tall (1× visible + 4× scroll travel), or (b) use `pinSpacing: false` and manually set a `margin-top` on the element that follows the pinned section equal to the scroll travel distance. Option (a) is simpler and less brittle.
+3. **Expecting `scrub` to smooth a `createScrollProgress` callback.** It does not — GSAP builds the scrub tween only for a trigger with an attached animation, and `onProgress` always gets raw progress. Symptom: the value snaps per scroll event and no `scrub` number changes it. Smooth in your tick.
 
-4. **`prefers-reduced-motion` not respected — accessibility violation.** Scroll-driven camera animation is continuous viewport motion triggered by user input. For users with vestibular disorders, this produces motion sickness indistinguishable from the same condition triggered by physical motion. Smooth-scroll inertia compounds the problem — the scene keeps moving after the user stops scrolling. Always check `window.matchMedia('(prefers-reduced-motion: reduce)').matches` before initializing Lenis. If set, call `lenis.destroy()` so scroll reverts to native browser behavior. Optionally also reduce the camera animation: replace the camera timeline with a static final position or cut the `end` distance to 0 so the camera jumps once to the authored final state without sweeping through keyframes. Failure to handle this is an accessibility violation under WCAG 2.1 criterion 2.3.3 (Animation from Interactions). It is not optional.
+4. **Reaching for `scrollerProxy`.** Lenis moves the real document scroll, so ScrollTrigger's native reads are correct and `lenis.on('scroll', ScrollTrigger.update)` — already done by `ScrollBridge` — is the whole integration. A proxy adds a second source of truth for scroll position and causes the stutter it is meant to fix. It belongs to transform-based or custom-container scrolling only.
 
-5. **`camera.lookAt()` called in the render loop instead of `onUpdate`.** A common shortcut is to store a `lookAtTarget` vector and call `camera.lookAt(lookAtTarget)` once per frame at the top of the render loop. This works for orbit controls, but when GSAP scrub is driving the camera position, the timeline can update multiple times per frame during a scrub (GSAP interpolates across skipped frames). If `lookAt` runs only once per render cycle, the lookAt target lags behind position updates, producing a frame where the camera has moved but hasn't re-aimed — visible as a directional jitter that is difficult to diagnose because it doesn't appear in every frame. The fix is to call `camera.lookAt()` inside the `onUpdate` callback of the position tween (as shown in the recipe), so it updates in sync with every GSAP interpolation step.
+5. **`ScrollTrigger.refresh()` not called after layout changes.** ScrollTrigger measures section heights, trigger positions, and pin durations once at registration. Async content that shifts layout — images, fonts, API-injected DOM — invalidates those measurements, and beats then fire early or hold too long. Refresh 100 ms after `window.load`, on debounced resize, and in the `.then()` of any content injection.
+
+6. **Pin spacing pushing downstream content.** Pinning inserts an invisible spacer whose height equals the full pinned travel, so everything after the pinned section moves down when ScrollTrigger initializes. Either design the page assuming the hero section is 5× viewport height (1 visible + 4 travel), or use `pinSpacing: false` and set a matching `margin-top` on the next element. The first option is simpler and less brittle.
+
+7. **`camera.lookAt()` in the render loop instead of `onUpdate`.** On the pinned-timeline path GSAP can interpolate the timeline more than once per rendered frame during a scrub. A `lookAt` that runs once per render cycle lags the position updates, producing intermittent directional jitter that is hard to diagnose because it isn't in every frame. Call it inside the position tween's `onUpdate`. On the `createScrollProgress` path this doesn't arise — you own both writes in the same tick.
 
 ## Reference
 
 See `references.md`:
 
-- **14islands** entry: Homepage hero sets an oversized "Design & Technology" headline against a near-white field, edge-anchored so each word touches a different viewport edge. The annotation specifically calls out that type composition should come first, with the camera path keyed to the type layout — not the reverse. For premium work: art-direct the four `cameraPath` keyframes so each beat frames the 3D object in a way that complements whatever HTML copy sits in that scroll section. The camera serves the message, not the other way around.
+- **14islands** entry: Homepage hero sets an oversized "Design & Technology" headline against a near-white field, edge-anchored so each word touches a different viewport edge. The annotation calls out that type composition should come first, with the camera path keyed to the type layout — not the reverse. For premium work: art-direct each beat so it frames the 3D object in a way that complements whatever copy sits in that scroll section. The camera serves the message, not the other way around.
 
-- **Ueno** entry: A grid of iPhone mockups at three different angles, where the angle differential per device is what sells physical presence. On scroll, those angles interpolate. What to copy: the principle that authored angle variation (not just zoom or dolly) is what makes scroll-driven camera feel cinematic. Each `cameraPath` keyframe should have a meaningfully different viewing angle — avoid keyframes that differ only in z-position, which produces a tunnel-vision dolly and nothing else.
+- **Ueno** entry: A grid of device mockups at three different angles, where the angle differential per device is what sells physical presence. On scroll, those angles interpolate. What to copy: authored angle variation — not just zoom or dolly — is what makes scroll-driven camera feel cinematic. Each keyframe should have a meaningfully different viewing angle; keyframes that differ only in z produce a tunnel-vision dolly and nothing else.

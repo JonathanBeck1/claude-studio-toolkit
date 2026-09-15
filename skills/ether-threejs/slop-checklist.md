@@ -20,7 +20,7 @@ Run this checklist on every three.js scene before committing. If you tick any bo
 Every shipped 3D moment must demonstrate ALL of these:
 
 - [ ] At least one custom GLSL shader (vertex, fragment, or both) giving a material identity
-- [ ] Postprocessing chain — bloom + dither via the kit's composer presets (`createHeroComposer` or `createNightComposer`). Tone mapping belongs only in the hdr/night preset. Library is vanruesc `postprocessing`, never `UnrealBloomPass`.
+- [ ] Postprocessing chain — one of the kit's three composer presets: `createHeroComposer` (restrained LDR bloom + dither), `createNightComposer` (hotter bloom, for scenes whose light is emissive geometry), or `createLightComposer` (dither only — on a pale ground bloom lifts the whole field and the accent disappears). ACES tone mapping is the `hdr` option on `createComposer`; of the three presets only `createNightComposer` exposes it. Library is vanruesc `postprocessing`, never `UnrealBloomPass`.
 - [ ] Camera choreography driven by GSAP timeline OR scroll position via Lenis — never `OrbitControls` for non-product contexts
 - [ ] Geometry is one of: hand-modeled in Blender, procedurally generated (e.g., particle system, raymarched SDF), or a non-primitive imported asset
 - [ ] The brand palette is applied deliberately (one accent dominant, another as counterpoint, muted values on the dark field) — never three.js default colors

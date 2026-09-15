@@ -1,3 +1,4 @@
+// Standalone reference snippet — not shipped by the engine; ether/shaders exports the dither chunk only.
 // Fresnel + iridescence helpers
 // Use: float f = fresnel(normal, viewDir, power);
 //      vec3 c = iridescence(viewDot, palette);
