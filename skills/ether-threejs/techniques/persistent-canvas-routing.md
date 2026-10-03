@@ -269,7 +269,9 @@ address bar, the navigation listener, the single-flight guard, and
 teardown (real teardown only on `beforeunload`; the manager survives
 every swap). It **returns the `SceneManager`**, so site code can reach
 `manager.activeScene` afterwards — for a dev panel, a stats overlay,
-anything that needs to bind to whatever is currently live.
+anything that needs to bind to whatever is currently live. For what the
+runtime is actually doing (hop phase, draw counts, applied DPR, the composer
+running), read `manager.getDiagnostics()` (ether 1.2+; see `performance.md`).
 
 ```ts
 // your site: src/scene/boot.ts

@@ -16,6 +16,13 @@ Audit the target three.js code for premium-quality issues. Target: $ARGUMENTS. W
 5. **Brand-as-form alignment** — does the 3D work *express the brand*, or is it generic decoration?
 6. **Lenis + GSAP integration** — scroll-driven scenes use Lenis for smooth scroll, GSAP for orchestration. No double-driving from `requestAnimationFrame` + scroll listeners colliding.
 
+**Layers.** The categories above are the source layer. Report every layer, each either run or `not collected — <reason>`.
+- **source**: always.
+- **runtime**: when the project uses ether 1.2+ and you can drive a browser against a running build. Prefer a production preview for any number you cite. Follow the collection recipe and evidence rules in the `ether-threejs` skill's `performance.md` (Runtime diagnostics).
+- **visual**: page screenshots of the settled scene at the viewports the project's CLAUDE.md names; otherwise the slop-checklist self-review viewport plus one phone-sized viewport.
+
+Utility routes (parked behind opaque DOM, or no scene) need no runtime or visual layer beyond `failures` 0. Performance claims on any scene follow `performance.md`'s evidence rules.
+
 **Output format**
 
 ```
@@ -23,6 +30,11 @@ Audit the target three.js code for premium-quality issues. Target: $ARGUMENTS. W
 
 ### Files reviewed
 - ...
+
+### Evidence
+- source: <files read>
+- runtime: <commit (git rev-parse --short HEAD; on a dirty tree append +dirty:<`git diff HEAD | git hash-object --stdin | cut -c1-7`>) · URL · build (dev/preview/deploy id) · browser · GPU renderer string or software GL · viewport> — <phase, route, failures, skipped, renderCalls/drawCalls/triangles, geometries/textures/programs per route, dpr, postFX, fps/cpuMs only if real hardware> | not collected — <reason>
+- visual: <commit · viewports · screenshot paths> | not collected — <reason>
 
 ### [CRITICAL] Blocking issues (must fix before ship)
 - ...
@@ -37,4 +49,4 @@ Audit the target three.js code for premium-quality issues. Target: $ARGUMENTS. W
 - [pointers into ether-threejs skill recipes]
 ```
 
-Do not modify any files. Report only.
+Do not modify project files. Starting a dev server or preview and driving a browser read-only is allowed; stop anything you started.

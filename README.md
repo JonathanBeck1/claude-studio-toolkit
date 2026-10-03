@@ -6,9 +6,25 @@ production site. Skills that load before 3D code is written, slash commands
 that audit against a written bar, remind-only hooks that fire at the right
 moment, and a read-only review agent that defaults to NEEDS WORK.
 
-Built alongside the [ether](https://github.com/JonathanBeck1/ether) engine;
-the `ether-*` skills document that engine's shader, postprocessing, and scroll
-architecture.
+## ether and this toolkit
+
+[ether](https://github.com/JonathanBeck1/ether) is the engine: it renders,
+routes scenes and reports what its runtime is doing. This toolkit is the
+judgment on top: the slop bar, the recipes, the audits and the review agent.
+Ether provides truth; the toolkit provides judgment.
+
+The coupling runs one way. The toolkit knows ether deeply (its module map,
+composer presets, scene contract and diagnostics snapshot) and cites it by
+symbol. Ether knows nothing about the toolkit: its snapshot is the same JSON
+for a developer in devtools, a CI job or a Playwright test. There is no shared
+code. The toolkit reads ether's documented contract, so a project installs
+nothing extra.
+
+**Compatibility.** Toolkit 0.2 supports ether 1.2+. The `/threejs-audit`
+runtime layer reads `SceneManager.getDiagnostics()`, added in ether 1.2.
+Against ether 1.0-1.1 the source layer runs unchanged and the runtime layer
+reports `not collected`. Where a skill and ether's source disagree, the source
+wins.
 
 ## Install
 
@@ -51,7 +67,7 @@ suites for the skill descriptions — see [Evals](#evals).
 |---|---|
 | `/ship` | premium-review → triage → conventional commit → push → offer a PR. Never commits before you confirm the message; commit bodies carry no attribution trailers. |
 | `/audit` | Detects what's in the diff (scene, styling, logic, docs) and runs the matching audits, on the same scope rule `premium-review` defines. Report only. |
-| `/threejs-audit` | Reviews three.js code against the `ether-threejs` slop checklist. Report only. |
+| `/threejs-audit` | Reviews three.js code in three layers: source against the `ether-threejs` slop checklist, runtime from ether's diagnostics snapshot, and visual from screenshots. A layer it could not run is reported as `not collected`. Report only. |
 | `/brand-check` | Audits a page against the brand reference your `CLAUDE.md` names — colors, type, logo, voice. Refuses to audit from remembered colors. |
 | `/handoff` | Writes a structured session-handoff file so a cold session resumes without the transcript. |
 | `/new-plan` | Scaffolds a phase plan for work that spans sessions — the exception, not the routine. Doesn't pre-fill decisions, and writes into the plans directory your repo already uses. |
@@ -61,7 +77,7 @@ suites for the skill descriptions — see [Evals](#evals).
 
 | Agent | Role |
 |---|---|
-| `premium-review` | End-of-build auditor. Routes changed files to the right checklists, applies a ship-readiness pass, and returns a punch list with file:line refs. Default verdict is NEEDS WORK; a clean static audit on rendered work is NEEDS VISUAL VERIFICATION, never READY. Read-only. |
+| `premium-review` | End-of-build auditor. Routes changed files to the right checklists, applies a ship-readiness pass, and returns a punch list with file:line refs. Default verdict is NEEDS WORK; a clean static audit on rendered work is NEEDS VISUAL VERIFICATION, never READY without the visual (and, for ether 1.2+ scenes, runtime) evidence it needs. It cites runtime numbers only from evidence handed to it (a `/threejs-audit` Evidence block, CI output, a snapshot) and says plainly when that evidence is missing. Read-only. |
 | `repo-orientation` | Maps an unfamiliar codebase: the real entry point, one traced path end to end, long-lived state, and the seams. States only what it read in files it opened, and reports what it skipped. Read-only. |
 | `minimal-diff` | Writes the fewest lines that solve the stated problem. Declares a line budget up front, tests every line against the request, and reports what it noticed but deliberately left alone. |
 
@@ -82,8 +98,13 @@ Branch: feat/hero-rim  •  Files audited: 3
 - brand-check: colors resolve to tokens, display face matches the brand reference
 - ship-readiness: no stray logs, no secrets, diff scoped to the task
 
+## Evidence
+- runtime: not provided
+- visual: not provided
+
 ## Before READY
 - View / at 1440×900 and 390×844: confirm the rim reads as an edge, not a second glyph
+- Capture `getDiagnostics()` on / once settled; confirm `failures` 0 and textures flat across three in-page / → /work → / hops
 ```
 
 ### Hooks (`hooks/hooks.json`)
