@@ -144,17 +144,17 @@ routes that should share a world reference the same function object:
   identity precisely so this comparison can match; two routes that inline
   two separate arrow functions can never take this path.
 
-Hop order otherwise: exit old → dispose old → construct + preload next →
-size to the canvas box → activate → enter. Exit runs first so scene
+Hop order otherwise: exit old → dispose old → construct next → size to
+the canvas box → preload → activate → enter. Exit runs first so scene
 resource lifetimes are strictly disjoint. **`enterTransition` is not
 awaited by the queue** — a navigation during a long intro interrupts it
 via `dispose`.
 
 ### Per-scene contract — every scene must implement this interface
 
-Five members are required — `scene`, `camera`, `enterTransition`,
-`exitTransition`, `tick`, `dispose` — and four are optional, each
-covering a case the required five cannot:
+Six members are required — `scene`, `camera`, `enterTransition`,
+`exitTransition`, `tick`, `dispose` — and five are optional, each
+covering a case the required six cannot:
 
 | Member | Required | What it is for |
 |---|---|---|
@@ -371,4 +371,4 @@ See `references.md`:
 
 - **Hello Monday** entry: The dark sliding panel that sits over the right edge of the hero is a navigation surface sitting above a single WebGL canvas that persists between the hero and project tiles below. The project tile color fields stay live on the same WebGL context as the hero. This is the architectural choice this technique implements — one canvas under all HTML overlays, scenes swapped via camera transitions, never a page reload. What to copy: the architecture. What to skip: Hello Monday's illustration style is a studio signature; borrow the persistent-canvas structure, not the artwork.
 
-- **Bonhomme** entry: Bonhomme Paris is cited publicly for narrative scrollytelling case studies with persistent canvas state across route changes, but the `references/screenshots/bonhomme.png` capture landed on `bonhomme.lol` (Maxime Bonhomme's personal portfolio), not Bonhomme Paris (`bonhommeparis.com`). Do not cite this entry as verified evidence until the screenshot is re-captured against the correct URL. The technique recipe above does not depend on that capture — it is grounded in the Hello Monday entry and in Active Theory's navigation behavior (project-to-project transitions with no renderer reset).
+- **Bonhomme** entry: Bonhomme Paris is cited publicly for narrative scrollytelling case studies with persistent canvas state across route changes, but the entry's screenshot capture landed on `bonhomme.lol` (Maxime Bonhomme's personal portfolio), not Bonhomme Paris (`bonhommeparis.com`). Do not cite this entry as verified evidence until the site is re-captured against the correct URL. The technique recipe above does not depend on that capture — it is grounded in the Hello Monday entry and in Active Theory's navigation behavior (project-to-project transitions with no renderer reset).
