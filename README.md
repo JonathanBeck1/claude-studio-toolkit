@@ -96,7 +96,6 @@ Remind-only — they print, never block.
 | `kit-drift-reminder.sh` | PostToolUse (Edit/Write) | Engine source is touched → sync the engine README and the matching skill in the same PR |
 | `premium-review-reminder.sh` | PreToolUse (Bash) | The command is a `git commit` and staged files include deliverable paths → confirm `premium-review` ran |
 | `plan-mode-nudge.sh` | PostToolUse (Edit/Write) | Fourth edit of a session → one-shot nudge toward Plan mode and a worktree |
-| `random-tip.sh` (in `scripts/`) | SessionStart | One rotating Claude Code habit per session |
 
 Path patterns are environment-overridable: `STUDIO_SCENE_GLOB`
 (default `*/src/scene/*`), `STUDIO_ENGINE_GLOB` (default `*/ether/src/*`),
