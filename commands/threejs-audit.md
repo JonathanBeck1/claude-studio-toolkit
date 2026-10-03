@@ -12,7 +12,7 @@ Audit the target three.js code for premium-quality issues. Target: $ARGUMENTS. W
 1. **Slop checklist** — default-quality giveaways: stock geometry, basic Lambert/Phong with no postprocessing, default rotation/orbit animation, no DPR clamping, particles for the sake of particles.
 2. **Performance budget** — DPR clamped? Frame budget reasonable? Texture sizes power-of-two and reasonable? Geometry instanced where appropriate?
 3. **Postprocessing** — using the `postprocessing` package? Sensible passes only, no kitchen-sink stacks?
-4. **Shaders** — uniforms named meaningfully? GLSL imported by one consistent convention across the project — if a GLSL build plugin is configured, imports should go through it rather than `?raw`, and mixing both is the thing to flag. No magic numbers without comments explaining the intent?
+4. **Shaders** — uniforms named meaningfully? Shader loading mixed without a reason (some via `vite-plugin-glsl`, some `?raw`, some inline strings)? Flag accidental mixing; don't enforce one strategy. No magic numbers without comments explaining the intent?
 5. **Brand-as-form alignment** — does the 3D work *express the brand*, or is it generic decoration?
 6. **Lenis + GSAP integration** — scroll-driven scenes use Lenis for smooth scroll, GSAP for orchestration. No double-driving from `requestAnimationFrame` + scroll listeners colliding.
 

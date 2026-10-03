@@ -40,7 +40,7 @@ The engine is brand-free by construction: it ships wiring and takes the palette 
 
 ## Hard rules
 
-- **GLSL is imported via `?raw`.** Pattern: `import frag from './x.frag.glsl?raw'`. Even if `vite-plugin-glsl` is configured, match the codebase's actual pattern.
+- **Follow the project's configured shader import convention** — `vite-plugin-glsl`, `?raw` (`import frag from './x.frag.glsl?raw'`), or inline strings. When adding a shader, use what the codebase already does; don't mix strategies without a reason.
 - **`optimizeDeps.exclude: ['ether']`** is mandatory in your `astro.config.ts` (or Vite config) for a git / `file:` install, which ships raw `.ts`. esbuild's dep-scan can't parse the engine's Vite-only `?raw` GLSL imports; excluding it routes those files through Vite's full plugin pipeline instead.
 - **Never set `preserveSymlinks: true`** for a `file:` layout — it pins the engine at its node_modules path, which Vite ignores for file-watching, so engine edits never hot-reload and it gets served as a stale cached external dep. Its one job (resolving the engine's bare `three` / `postprocessing` imports into the *site's* node_modules) is done correctly by `resolve.dedupe: ['three', 'postprocessing', …]` — set that instead. Both rules live together in `astro.config.ts`.
 - **Three composer presets exist — pick one, don't mutate one into the other.** All three are thin tunings over `createComposer`; if none fits, write a fourth on `createComposer` rather than parameterising an existing one. `createHeroComposer` takes `PresetOptions` and is LDR by design — it never passes `hdr`, so values clip at 1.0 deliberately as bloom containment. Only `createNightComposer` re-exposes `hdr` (`NightComposerOptions`), which switches on `HalfFloatType` buffers + an ACES `ToneMappingEffect` and makes `toneMappingExposure` live. `createLightComposer` is dither-only.
@@ -70,7 +70,7 @@ The engine is brand-free by construction: it ships wiring and takes the palette 
 
 1. **Confirm against the `ether-threejs` slop checklist first** — general rules apply before specifics.
 2. **Decide ownership** — is the shader reusable across sites (engine) or brand-specific (site)? Default: site, until a second consumer exists.
-3. **Place files** — `src/shaders/<scene>/<name>.{vert,frag}.glsl`. Use `?raw` imports.
+3. **Place files** — `src/shaders/<scene>/<name>.{vert,frag}.glsl`. Import them by the project's existing convention.
 4. **Wire uniforms through your constants module** — brand colors, displacement amplitudes, fresnel exponents.
 5. **Tick uniforms** from the scene's `tick()` (or a wrapping class's `tickUniforms`).
 6. **Add `precision highp float;`** to fragment shaders.
