@@ -111,7 +111,7 @@ One recipe, for Playwright's `page.evaluate(fn, expected)` or any browser tool's
 Hop by clicking in-page links or calling the app's own router, never `page.goto` or URL navigation, which reloads and gives a fresh manager.
 
 - Prove continuity on every settled visit: `frames` keeps increasing and `id` never decreases (it rises on every rebuild and stays the same on a retarget). A drop back to `id` 1 means a full page load.
-- If continuity fails (for example a browser without View Transitions falling back to full loads), write `runtime: hop flatness not collected — full page loads`.
+- If continuity fails (`id` back to 1 or `frames` restarting means the page fully reloaded, e.g. an Astro `<ClientRouter fallback="none">` in a browser without View Transitions), write `runtime: hop flatness not collected — full page loads`.
 - Compare `geometries/textures/programs` at each A visit with the first A visit.
 
 ### Screenshots and provenance

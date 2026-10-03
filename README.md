@@ -6,6 +6,26 @@ production site. Skills that load before 3D code is written, slash commands
 that audit against a written bar, remind-only hooks that fire at the right
 moment, and a read-only review agent that defaults to NEEDS WORK.
 
+## What it teaches Claude
+
+Left alone, an AI pair writes plausible three.js fast and calls it done:
+stock geometry, Lambert materials with no postprocessing, a default orbit
+spin, "smooth" with no measurement behind it. The toolkit replaces those
+defaults with habits written where Claude reads them:
+
+- Load the technique reference before writing 3D code, and audit against the
+  written slop checklist, never from general three.js knowledge.
+- Treat ether as the authority: cite it by symbol, defer to its source where a
+  skill disagrees, and read live numbers from `getDiagnostics()` instead of
+  inferring them from code.
+- Claim nothing unmeasured. Frame rates need a production build on named, real
+  hardware; rendered work needs visual evidence before it is called READY.
+- Read before asserting: brand checks use the repo's brand document,
+  orientation reports only files it opened, onboarding fills its tour from the
+  repo's own `CLAUDE.md` and README.
+- Change as little as the task needs, and ask before committing or opening a
+  PR.
+
 ## ether and this toolkit
 
 [ether](https://github.com/JonathanBeck1/ether) is the engine: it renders,
@@ -21,10 +41,10 @@ code. The toolkit reads ether's documented contract, so a project installs
 nothing extra.
 
 **Compatibility.** Toolkit 0.2 supports ether 1.2+. The `/threejs-audit`
-runtime layer reads `SceneManager.getDiagnostics()`, added in ether 1.2.
-Against ether 1.0-1.1 the source layer runs unchanged and the runtime layer
-reports `not collected`. Where a skill and ether's source disagree, the source
-wins.
+runtime layer reads `SceneManager.getDiagnostics()`, which is listed under
+Unreleased in ether's CHANGELOG until 1.2 is tagged; the audit detects it by
+the method's presence, not by version. Against an ether build without it the
+source layer runs unchanged and the runtime layer reports `not collected`.
 
 ## Install
 
@@ -65,13 +85,21 @@ suites for the skill descriptions — see [Evals](#evals).
 
 | Command | Does |
 |---|---|
-| `/ship` | premium-review → triage → conventional commit → push → offer a PR. Never commits before you confirm the message; commit bodies carry no attribution trailers. |
+| `/ship` | premium-review → triage → commit → push → offer a PR; steps below. Commit bodies carry no attribution trailers. |
 | `/audit` | Detects what's in the diff (scene, styling, logic, docs) and runs the matching audits, on the same scope rule `premium-review` defines. Report only. |
-| `/threejs-audit` | Reviews three.js code in three layers: source against the `ether-threejs` slop checklist, runtime from ether's diagnostics snapshot, and visual from screenshots. A layer it could not run is reported as `not collected`. Report only. |
+| `/threejs-audit` | Reviews three.js code in three layers: source, runtime and visual; see [Auditing an ether project](#auditing-an-ether-project). Report only. |
 | `/brand-check` | Audits a page against the brand reference your `CLAUDE.md` names — colors, type, logo, voice. Refuses to audit from remembered colors. |
 | `/handoff` | Writes a structured session-handoff file so a cold session resumes without the transcript. |
 | `/new-plan` | Scaffolds a phase plan for work that spans sessions — the exception, not the routine. Doesn't pre-fill decisions, and writes into the plans directory your repo already uses. |
 | `/onboard` | Runs the `studio-onboard` ritual. |
+
+`/ship`, in order:
+
+1. Snapshot `git status` and the diff; a clean tree stops with "Nothing to ship."
+2. Run `premium-review` on the diff, passing any evidence from the session verbatim (Evidence blocks, snapshot JSON, CI logs, your visual confirmation).
+3. Triage: Critical aborts; Should fix and NEEDS VISUAL VERIFICATION continue only on your explicit yes.
+4. Draft a conventional commit, show it with the diff summary, and commit only after you confirm. It stages named paths, lets hooks run, and passes `--no-verify` only if you explicitly ask.
+5. Push (setting upstream if needed; never to the default branch without instruction), then offer a PR via `gh pr create` and open it only on confirmation.
 
 ### Agents (`agents/`)
 
@@ -122,6 +150,29 @@ Remind-only — they print, never block.
 Path patterns are environment-overridable: `STUDIO_SCENE_GLOB`
 (default `*/src/scene/*`), `STUDIO_ENGINE_GLOB` (default `*/ether/src/*`),
 `STUDIO_DELIVERABLE_RE` (default `(^|/)src/(scene|components|styles)/`).
+
+## Auditing an ether project
+
+`/threejs-audit` reports three layers, each either run or
+`not collected — <reason>`:
+
+- **source**, always: the target files against the `ether-threejs` slop
+  checklist, performance budgets and shader conventions.
+- **runtime**, when ether has `getDiagnostics()` and there is a running
+  build (preferably a production preview for any number cited): Claude
+  drives a browser, finds the
+  `SceneManager` on the canvas, polls `getDiagnostics()` until the expected
+  route settles, and keeps the raw JSON with its provenance (commit plus a
+  dirty-tree fingerprint, URL, build, browser, GPU string, viewport). Leak
+  checks hop routes in-page and compare geometry, texture and program counts
+  against the first visit.
+- **visual**: page screenshots of the settled scene at the viewports the
+  project's `CLAUDE.md` names.
+
+The collection recipe, evidence rules and snapshot reading table live in
+`skills/ether-threejs/performance.md`. `premium-review` runs no browser, and
+treats evidence whose commit or fingerprint no longer matches the tree as not
+provided.
 
 ## Evals
 
