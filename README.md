@@ -12,6 +12,13 @@ architecture.
 
 ## Install
 
+Install it by name from this repo's marketplace (user scope, every project):
+
+```bash
+claude plugin marketplace add JonathanBeck1/claude-studio-toolkit
+claude plugin install claude-studio-toolkit@studio-toolkit
+```
+
 Load it for a session:
 
 ```bash
