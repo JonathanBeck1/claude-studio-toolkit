@@ -23,7 +23,7 @@ this.scroll = quality.enableSmoothScroll
 ```
 
 Key points:
-- **Conditional construction.** `quality.enableSmoothScroll` is `tier !== 'LOW'` (`src/quality/quality.ts`). When the bridge is null, ScrollTrigger falls back to native scroll events. Don't paper over the null with a fake bridge — the fallback works.
+- **Conditional construction.** `quality.enableSmoothScroll` is `tier !== 'LOW' && !reducedMotion` (`src/quality/quality.ts`); ether 1.0–1.1 used `tier !== 'LOW'` and lowered the tier one step under reduced motion instead. When the bridge is null, ScrollTrigger falls back to native scroll events. Don't paper over the null with a fake bridge — the fallback works.
 - **Options pass through verbatim to `new Lenis(...)`.** Feel tuning (duration, multipliers, inertia exponent) lives in your site's constants module. Tune the feel there, not inline.
 - **`syncTouch: true`** is the fix for choppy mobile scroll-to-3D. The folk advice ("syncTouch fights iOS, leave it false") is wrong for scroll-driven 3D: native iOS scroll arrives in coarse stepped compositor bursts, so binding the 3D to it reads as choppy. `syncTouch` (Lenis 1.3+) smooths ON TOP of native momentum — it does not hijack scroll — giving touch the same rAF-synced position desktop has. `touchInertiaExponent` shapes the post-flick glide decay (Lenis default 1.7); the per-frame interpolation that smooths iOS's stepped input is `syncTouchLerp` (leave it at its default). With Lenis live on touch, the old touch-only damping compensation is no longer needed — it was only masking the missing inertial layer.
 
@@ -214,7 +214,7 @@ Order:
 3. Store the handle on the scene (`this.fooTrigger`).
 4. Add the `.kill()` to `killTriggers()` in the same commit.
 5. Pull thresholds and smoothing settle times from your constants module if reusable, else inline with a one-line comment.
-6. Test the no-bridge fallback (LOW tier: bridge null, native scroll). Scroll feel is less buttery but values must still drive correctly. Touch is NOT a fallback case — it runs the bridge.
+6. Test the no-bridge fallback (LOW tier or reduced motion: bridge null, native scroll). Scroll feel is less buttery but values must still drive correctly. Touch is NOT a fallback case — it runs the bridge.
 
 ---
 

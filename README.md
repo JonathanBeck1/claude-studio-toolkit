@@ -82,7 +82,7 @@ their triggers without being named). Hooks arm on load.
 |---|---|---|
 | `ether-threejs` | Any three.js / WebGL scene work | The slop checklist (reject + required), an annotated reference list of premium studios with per-studio copy/skip notes, seven technique recipes (curl-noise particles, fresnel iridescence, MSDF typography, persistent-canvas routing, postprocessing chain, raymarched SDF hero, scroll camera choreography), reusable GLSL snippets, and performance budgets |
 | `ether-shaders` | GLSL, `ShaderMaterial`, bloom/dither, extruded 3D type | Engine-vs-site shader boundary, the LDR bloom + dither preset and its ceilings, iridescent-rim and cheap-noise displacement patterns, the `extrudedWord` pipeline, pitfalls |
-| `ether-scroll` | Lenis, ScrollTrigger, scroll-driven 3D | The one-rAF-loop rule, conditional smooth scroll by GPU tier, progress-scrub vs class-toggle vs body-flag patterns, scroll-restoration, paired teardown |
+| `ether-scroll` | Lenis, ScrollTrigger, scroll-driven 3D | The one-rAF-loop rule, conditional smooth scroll by GPU tier and reduced motion, progress-scrub vs class-toggle vs body-flag patterns, scroll-restoration, paired teardown |
 | `studio-onboard` | "I'm new", "where do I start" | A deterministic first-session ritual whose tour is a template filled from the repo's own CLAUDE.md and README |
 
 Every skill ships `evals/triggers.json`: ~20 realistic prompts labeled
