@@ -9,9 +9,10 @@ Steps in order — do not skip:
 
 1. **Snapshot state.** Run `git status` and `git diff --stat`. Confirm there are changes to ship. If working tree is clean, abort with "Nothing to ship."
 
-2. **Run premium-review.** Invoke the `premium-review` subagent (`claude-studio-toolkit:premium-review` when installed as a plugin) against the current diff. It chains threejs-audit + brand-check + the ship checklist. Wait for its punch list.
+2. **Run premium-review.** Invoke the `premium-review` subagent (`claude-studio-toolkit:premium-review` when installed as a plugin) against the current diff. It chains threejs-audit + brand-check + the ship checklist. Wait for its punch list. Include in the subagent prompt, verbatim, any evidence from this session: `/threejs-audit` Evidence blocks, `getDiagnostics()` JSON, CI or e2e log paths, and the user's own visual confirmation (route, viewport). If there is none, say so in the prompt.
 
 3. **Triage findings.**
+   - Read the Verdict line. **NEEDS VISUAL VERIFICATION** → show the `Before READY` list and the Evidence section's `not provided` lines verbatim, and ask whether the user has checked them. Proceed only on an explicit yes.
    - [CRITICAL] **Critical** → abort the ship flow, surface the issues, ask user how to proceed.
    - [WARN] **Should fix** → list them, ask user to confirm shipping anyway OR pause to fix.
    - [NOTE] **Passed / Optional** → proceed.

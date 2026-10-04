@@ -68,7 +68,7 @@ const { composer } = createComposer(renderer, scene, camera, {
 });
 ```
 
-`loadLUT` picks `LUT3dlLoader` or `LUTCubeLoader` off the file extension and resolves to a `LookupTexture`. On devices without float 3D textures, call `lut.convertToUint8()` before building the effect.
+`loadLUT` picks `LUT3dlLoader` or `LUTCubeLoader` off the file extension and resolves to a `LookupTexture`. It fetches the file itself and rejects on an HTTP error or a body that does not parse as a LUT; postprocessing's own `loadAsync` never settles in either case, which would leave a scene's `preload()` pending. On devices without float 3D textures, call `lut.convertToUint8()` before building the effect.
 
 Two API names that recipes tend to invent and that do **not** exist in `postprocessing` 6.39: `LUTLoader` (the loaders are `LUTCubeLoader` and `LUT3dlLoader`) and `LookupTexture3D.createIdentity` (`LookupTexture3D` is a deprecated alias of `LookupTexture`, and the identity factory is `LookupTexture.createNeutral(size)`). A LUT is a grade, not a look — material identity still has to come from the shaders.
 

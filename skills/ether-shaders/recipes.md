@@ -197,7 +197,7 @@ const caption = await msdfText({ text: 'Chapter One', font: '/fonts/display.woff
 scene.add(caption.mesh);
 ```
 
-Serve your own font file (`.ttf` / `.otf` / `.woff` — troika's parser does not read woff2); the URL is preflighted, so an unreachable one rejects instead of hanging forever. Characters your font doesn't cover fall back to troika's unicode-font-resolver, whose data comes from jsDelivr unless you set `unicodeFontsURL` to your own copy. Raise `sdfGlyphSize` from its default 64 to 128 when the camera ranges close enough to read the glyph edge. Pass your own `material` and troika derives an MSDF-aware variant of it, so a custom `ShaderMaterial` keeps its identity.
+Serve your own font file (`.ttf` / `.otf` / `.woff` — troika's parser does not read woff2); the URL is preflighted and its first bytes checked, so an unreachable URL, a woff2, or an HTML page served in its place rejects instead of hanging forever. Characters your font doesn't cover fall back to troika's unicode-font-resolver, whose data comes from jsDelivr unless you set `unicodeFontsURL` to your own copy; if that fetch is blocked, the call rejects after `timeoutMs` (default 10000). Raise `sdfGlyphSize` from its default 64 to 128 when the camera ranges close enough to read the glyph edge. Pass your own `material` and troika derives an MSDF-aware variant of it, so a custom `ShaderMaterial` keeps its identity.
 
 **`extrudedWord` is type as FORM; `msdfText` is type as TEXT** — legible copy inside the scene: captions, chapter heads, UI in the world.
 
