@@ -1,0 +1,14 @@
+{
+  "name": "studio-toolkit",
+  "description": "Skills, commands, hooks, and agents for premium three.js / WebGL web work.",
+  "owner": {
+    "name": "Jonathan Beck"
+  },
+  "plugins": [
+    {
+      "name": "claude-studio-toolkit",
+      "source": "./",
+      "description": "Slop checklist, shader and scroll recipes for the ether engine, remind-only quality hooks, and a read-only review agent."
+    }
+  ]
+}

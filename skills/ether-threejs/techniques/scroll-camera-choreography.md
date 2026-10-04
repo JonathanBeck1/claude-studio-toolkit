@@ -186,13 +186,13 @@ export function buildCameraTimeline(camera, bloom) {
 
   // Drive an effect handle from the same timeline. createHeroComposer returns
   // `bloom` alongside `composer` — keep it rather than only `.composer`.
-  tl.to(bloom, { intensity: 0.12, duration: 1, ease: 'power2.inOut' }, 1);
+  tl.to(bloom.luminanceMaterial, { threshold: 0.55, duration: 1, ease: 'power2.inOut' }, 1);
 
   return tl;
 }
 ```
 
-Note that bloom target: the hero preset's `0.06` is a restraint ceiling, so a scroll-driven bloom swell should stay near it. See `techniques/postprocessing-chain.md`.
+Note the bloom lever: the hero preset's `0.06` intensity is a restraint ceiling, so the swell leaves intensity alone and lowers the luminance threshold (preset `0.65`) to let more of the accent bloom. Stay inside its `0.55 – 0.8` safe range. See `techniques/postprocessing-chain.md`.
 
 ### `ScrollTrigger.refresh()` after layout settles
 

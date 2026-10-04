@@ -3,7 +3,7 @@ description: Broad audit pass — chains threejs-audit, brand-check, and code re
 argument-hint: [optional path — defaults to the current change set]
 ---
 
-Run a comprehensive audit. Target: $ARGUMENTS. With no argument, scope it exactly the way the `premium-review` agent does — this branch vs the repo's default branch, falling back to staged + unstaged + untracked when you are on the default branch. That agent's "Establish scope" section is the single definition; do not restate a different base here.
+Run a comprehensive audit. Target: $ARGUMENTS. With no argument, scope it exactly the way the `premium-review` agent does — this branch vs the repo's default branch, falling back to staged + unstaged when you are on the default branch. That agent's "Establish scope" section is the single definition; do not restate a different base here.
 
 **Step 1 — Detect file types in scope.**
 
@@ -41,7 +41,7 @@ Produce a single punch list in this format:
 - ...
 
 ### Passed
-- <category>: no issues
+- <category>: <what was actually inspected>
 
 ### Evidence
 - <threejs-audit's Evidence block, copied as-is, when it ran>

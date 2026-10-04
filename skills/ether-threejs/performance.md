@@ -64,7 +64,7 @@ For draw calls, read the runtime snapshot (below). On a kit composer, scene draw
 ## Tooling
 
 - **Spector.js** — browser extension. Captures a single WebGL frame. Inspect every draw call, every shader, every uniform. Indispensable for debugging custom shaders.
-- **`Stats` (`ether/dev`)** — the engine's own overlay: FPS, frame ms, GPU tier, DPR, composer state, viewport. No memory readout — use the DevTools Memory tab for that. Mount it behind a `?stats` query param and import it dynamically so it ships zero bytes when the param is absent.
+- **`Stats` (`ether/dev`)** — the engine's own overlay: FPS and mean frame interval (1000/FPS, not work time), GPU tier, applied DPR, the quality profile's postFX flags (not whether a composer is running) and window size (not the canvas box). No memory readout — use the DevTools Memory tab for that. Mount it behind a `?stats` query param and import it dynamically so it ships zero bytes when the param is absent.
 - **Runtime snapshot (`manager.getDiagnostics()`, ether 1.2+)**: JSON from the live engine. See below.
 - **Chrome DevTools Coverage tab** — finds unused JS / CSS that's bloating the bundle.
 - **Lighthouse** — periodic checks for FCP / LCP. Run from CI.

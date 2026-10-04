@@ -6,7 +6,7 @@ Reference Claude reads when `ether-shaders` is invoked. Engine cites are ether r
 - **Engine owns** (`src/`): `DitherEffect`, `createHeroComposer` / `createNightComposer`, `ShaderQuad` (backdrop primitive), `extrudedWord` (text pipeline). Brand-agnostic.
 - **Your site owns** (`src/shaders/<scene>/`): the hero material (fresnel rim + displacement) and backdrop shaders. Brand identity lives here. Don't promote to the engine without a generalization pass (uniform-driven palette, etc.).
 
-**GLSL is imported via `?raw`** everywhere. Match that pattern even if `vite-plugin-glsl` is configured.
+**Follow the project's configured shader import convention** (`vite-plugin-glsl`, `?raw`, or inline strings). When adding a shader, use what the codebase already does; don't mix strategies without a reason. The engine's own sources use `?raw`, which is why a git / `file:` install needs `optimizeDeps.exclude: ['ether']`. Samples below use `?raw` as the example.
 
 ---
 
@@ -248,7 +248,7 @@ Key facts:
 
 1. **Confirm against the slop checklist** in `ether-threejs`. A custom shader is the answer to "no MeshBasicMaterial / MeshStandardMaterial on hero elements."
 2. **GLSL files live next to the consumer.** Site-specific shaders go in `src/shaders/<scene>/`. Reusable shaders (likely none until a second consumer) go in the engine's `src/shaders/`.
-3. **Import via `?raw`:** `import frag from './x.frag.glsl?raw'`.
+3. **Import by the project's existing convention** — e.g. `?raw`: `import frag from './x.frag.glsl?raw'`.
 4. **Wire `uTime` through the scene's tick method** — your tick reads `time` and writes `material.uniforms.uTime.value = time` (or use a `tickUniforms` method on a wrapping class).
 5. **Brand tokens through uniforms.** Pull colors from your constants module, not hardcoded vec3s in the shader. If tokens are mirrored in CSS, update both.
 6. **Add `precision highp float;`** at the top of fragment shaders explicitly.
