@@ -18,7 +18,7 @@ Audit the target three.js code for premium-quality issues. Target: $ARGUMENTS. W
 
 **Layers.** The categories above are the source layer. Report every layer, each either run or `not collected — <reason>`.
 - **source**: always.
-- **runtime**: when the project uses ether 1.2+ and you can drive a browser against a running build. Prefer a production preview for any number you cite. Follow the collection recipe and evidence rules in the `ether-threejs` skill's `performance.md` (Runtime diagnostics).
+- **runtime**: when the project uses ether 1.2+ and you can drive a browser against a running build. Prefer a production preview for any number you cite. Follow the collection recipe and evidence rules in the `ether-threejs` skill's `performance.md` (Runtime diagnostics); the recipe reaches the manager through the canvas's `__sceneManager` tag, which ether documents as a tooling hook stable across 1.x.
 - **visual**: page screenshots of the settled scene at the viewports the project's CLAUDE.md names; otherwise the slop-checklist self-review viewport plus one phone-sized viewport.
 
 Utility routes (parked behind opaque DOM, or no scene) need no runtime or visual layer beyond `failures` 0. Performance claims on any scene follow `performance.md`'s evidence rules.

@@ -100,8 +100,9 @@ One recipe, for Playwright's `page.evaluate(fn, expected)` or any browser tool's
 }
 ```
 
+- `__sceneManager` is a tooling hook ether documents as stable across 1.x (README, Stability): `attachSceneManager` and the routers set it and remove it on detach; a directly constructed manager carries none. Read it in tests and devtools, never in app code.
 - Decide "ether < 1.2" only when a manager is found without `getDiagnostics`.
-- Decide "manager not reachable" only at timeout. Causes: the app doesn't use `attachSceneManager`/`initSceneRouter`, boot never completed (the tag is set only after quality detection), or the engine detached (where ether still binds `beforeunload` to detach, a mailto or download click destroys the engine and deletes the tag). Report it as a finding, not a version mismatch.
+- Decide "manager not reachable" only at timeout. Causes: the app doesn't use `attachSceneManager`/`initSceneRouter`, boot never completed (the tag is set only after quality detection), or the engine detached (ether 1.0–1.1 bound `beforeunload` to detach, so a mailto or download click destroyed the engine and deleted the tag; 1.2 binds nothing there). Report it as a finding, not a version mismatch.
 - On timeout with a manager present, the last snapshot is the finding.
 - Once settled, wait at least 600 ms so an fps window closes, then keep the raw JSON.
 - **Software GL:** a `gpu` matching `/SwiftShader|llvmpipe|Software|Mesa offscreen/i`, or `'unknown'`, is not real hardware.

@@ -40,17 +40,20 @@ Troika parses the font file at runtime and builds the SDF atlas on demand, cachi
 
 Self-hosting is the engine's position for a second reason: `msdfText` requires the `font` option precisely so troika cannot quietly fall back to fetching a hosted Google font, and a premium site should not ship CDN type.
 
-**Characters outside the font's coverage** still route to troika's unicode-font-resolver, whose data is fetched from jsDelivr by default. Set `unicodeFontsURL` to your own copy to keep the page off a third-party CDN entirely — or keep the text inside the font's coverage and the resolver never runs.
+**Characters outside the font's coverage** still route to troika's unicode-font-resolver, whose data is fetched from jsDelivr by default. Set `unicodeFontsURL` to your own copy to keep the page off a third-party CDN entirely — or keep the text inside the font's coverage and the resolver never runs. When that fetch is blocked (a CSP, a firewall, offline), troika never calls back; `msdfText` rejects after `timeoutMs` (default 10000) with the font URL and the CDN named in the message.
 
 ## Code recipe
 
 ### Start with `msdfText` — the engine already wraps the awkward part
 
 `msdfText` from `ether/text/msdf` does three things you would otherwise
-get wrong: it preflights the font URL (troika's loader only *logs* a
-failed fetch and never calls back, so an unreachable font hangs forever),
-it promisifies `sync`, and it resolves only once the glyph atlas is
-ready — so the first frame the mesh renders is complete.
+get wrong: it preflights the font URL and checks its first bytes
+(troika's loader only *logs* a failed fetch or parse and never calls
+back, so an unreachable URL, a woff2, or an SPA fallback page served as
+the font would hang forever — each rejects up front instead), it
+promisifies `sync` with a `timeoutMs` ceiling, and it resolves only once
+the glyph atlas is ready — so the first frame the mesh renders is
+complete.
 
 ```ts
 import * as THREE from 'three';
@@ -220,6 +223,7 @@ by 1 relative to the particle mesh.
 | `sdfGlyphSize` | `64` (kit default) | 32 / 64 / 128 / 256 | Resolution of the SDF atlas per glyph, in pixels. 64 is correct for body and mid-size display. At hero scale on a 2× or 3× DPR display, the 64px SDF shows soft edges — bump to 128 for hero type. 256 adds almost no visible improvement over 128 except on very large or extremely thin-stroked faces, and costs 4× the VRAM of 128. Must be set before the first sync; changing it afterward requires a re-sync. |
 | `material` | none | any `THREE.Material` | Your own material, which troika derives an MSDF-aware variant of. Supplying it makes `color` a no-op. |
 | `unicodeFontsURL` | jsDelivr | your own mirror | Where troika's unicode-font-resolver fetches fallback font data for characters `font` does not cover. Only reached when such a character appears. |
+| `timeoutMs` | `10000` (kit default) | ms | How long `msdfText` waits for the glyph atlas after the font preflight passes, then rejects. troika never calls back when the fallback fetch above fails, so this is what turns a blocked CDN into an error instead of a preload that never settles. |
 | `letterSpacing` | `0` | −0.5 – 2.0 (em units) | Adds or removes tracking between glyphs, in em units. Positive values open the type; negative values tighten it. At hero scale, `letterSpacing: 0.05` adds a premium display feel without looking editorial-template. Values above 0.3 begin to read like an Akufen-style extreme stretch — intentional there, slop elsewhere. |
 | `lineHeight` | `'normal'` | `'normal'`, or a multiple like 1.0 – 2.0 | Height of each line, as a multiple of `fontSize`. The default is the string `'normal'`, not a number — troika derives a reasonable height from the font's own ascender/descender metrics, which is nearly always better than a guessed multiplier. Override only when a design spec gives you one. Single-line hero type ignores it. |
 
@@ -229,7 +233,7 @@ by 1 relative to the particle mesh.
    `sync(callback?)` returns `undefined`. Awaiting `undefined` resolves on the next microtask, so every line after the `await` still runs before the font has been fetched, parsed, rasterized, and laid out — and `textRenderInfo` is still `null`, `geometry.boundingBox` still zero. Centering, collision detection, snap-to-grid, anything reading glyph dimensions gets garbage, and a warm cache can hide it on the machine where it was written. Either use `msdfText`, which resolves on the callback, or wrap `sync` in a Promise yourself. It *is* safe to add the mesh to the scene before the atlas is built — troika updates the geometry in place and the object renders as nothing until then.
 
 2. **A `.woff2` font URL fails at parse time, not at fetch time.**
-   Troika parses font files itself rather than handing them to the browser, and its parser handles `.ttf`, `.otf`, and `.woff` only — a `.woff2` throws `woff2 fonts not supported`. This bites hardest when the font URL is copied out of a Google Fonts `@font-face` rule, which serves woff2 to every browser that matters. The fetch succeeds, so nothing looks wrong in the network panel; the text simply never appears. Convert to `.woff` (or serve the `.ttf`/`.otf` you licensed) and host it yourself. A second reason to self-host: `msdfText` makes `font` required specifically so troika cannot fall back to fetching a hosted Google font behind your back.
+   Troika parses font files itself rather than handing them to the browser, and its parser handles `.ttf`, `.otf`, and `.woff` only — a `.woff2` throws `woff2 fonts not supported`. This bites hardest when the font URL is copied out of a Google Fonts `@font-face` rule, which serves woff2 to every browser that matters. The fetch succeeds, so nothing looks wrong in the network panel; on a raw troika `Text` the text simply never appears and `sync` never calls back. `msdfText` reads the file's first bytes and rejects a woff2 with a message saying so. Convert to `.woff` (or serve the `.ttf`/`.otf` you licensed) and host it yourself. A second reason to self-host: `msdfText` makes `font` required specifically so troika cannot fall back to fetching a hosted Google font behind your back.
 
 3. **Soft edges on hero type at high DPR — `sdfGlyphSize` too low.**
    The default `sdfGlyphSize: 64` renders a 64×64 px SDF cell per glyph in the atlas. For body-size type on a standard display this is sharp. For viewport-spanning hero type on a 2× or 3× DPR display, the 64px cell is not enough resolution — the edges look slightly blurred and the stroke weight feels inconsistent. Set `sdfGlyphSize: 128` for any hero-scale instance, before the first sync; changing it after the atlas is built requires a new one. VRAM cost scales quadratically: 128 costs 4× a 64, 256 costs 16×. For hero type, 128 is the correct default; leave 64 for body.

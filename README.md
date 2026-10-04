@@ -1,10 +1,11 @@
 # claude-studio-toolkit
 
-A Claude Code plugin for premium three.js / WebGL web work: the toolkit a
-small studio used to keep an AI pair from shipping "default three.js" on a
-production site. Skills that load before 3D code is written, slash commands
-that audit against a written bar, remind-only hooks that fire at the right
-moment, and a read-only review agent that defaults to NEEDS WORK.
+A Claude Code plugin for building premium sites on the ether WebGL engine:
+the toolkit a small studio used to keep an AI pair from shipping "default
+three.js" on a production site. Skills that load before 3D code is written,
+slash commands that audit against a written bar, remind-only hooks that fire
+at the right moment, and a read-only review agent that defaults to
+NEEDS WORK.
 
 ## What it teaches Claude
 
@@ -41,10 +42,10 @@ code. The toolkit reads ether's documented contract, so a project installs
 nothing extra.
 
 **Compatibility.** Toolkit 0.2 supports ether 1.2+. The `/threejs-audit`
-runtime layer reads `SceneManager.getDiagnostics()`, which is listed under
-Unreleased in ether's CHANGELOG until 1.2 is tagged; the audit detects it by
-the method's presence, not by version. Against an ether build without it the
-source layer runs unchanged and the runtime layer reports `not collected`.
+runtime layer reads `SceneManager.getDiagnostics()`, added in ether 1.2; the
+audit detects it by the method's presence, not by version. Against an ether
+build without it the source layer runs unchanged and the runtime layer
+reports `not collected`.
 
 ## Install
 
