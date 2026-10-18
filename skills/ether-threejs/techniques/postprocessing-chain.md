@@ -78,7 +78,7 @@ Two API names that recipes tend to invent and that do **not** exist in `postproc
 
 ### Per-frame and resize
 
-`composer.render(deltaTime)` replaces `renderer.render(scene, camera)`. Do not call both — the scene would draw twice and the chain would run over already-composited output. On resize, call both `renderer.setSize(w, h)` and `composer.setSize(w, h)`: the composer owns its own render targets and will otherwise stay at the old resolution.
+`composer.render(deltaTime)` replaces `renderer.render(scene, camera)`. Do not call both — the scene would draw twice and the chain would run over already-composited output. On resize, `SceneManager` sizes the renderer and the scene's `this.composer` to the canvas box, with `updateStyle` false on both, before it calls the scene's `onResize(w, h)`; do not resize them again there. Size any other composer with `composer.setSize(w, h, false)`, and outside the engine pair it with `renderer.setSize(w, h, false)`. A composer owns its own render targets and will otherwise stay at the old resolution, and without the `false` any call that resizes the renderer writes inline pixel sizes onto the canvas over the stylesheet.
 
 ## Tunable parameters
 
@@ -108,7 +108,7 @@ Two API names that recipes tend to invent and that do **not** exist in `postproc
 
 6. **Calling both `renderer.render()` and `composer.render()`.** Once a composer is wired its `RenderPass` handles the scene render internally. Keeping the old `renderer.render(scene, camera)` in the loop draws the scene twice and runs the effect chain over already-composited output — doubled exposure and wrong intermediate buffers. Delete it.
 
-7. **`composer.setSize()` not called on resize.** The composer owns its intermediates. Call it alongside `renderer.setSize()`, or the output is a stretched blur that doesn't match the viewport.
+7. **`composer.setSize()` not called on resize, or called without `false`.** The composer owns its intermediates; one left at the old size renders a stretched blur that doesn't match the viewport. `SceneManager` resizes the scene's `this.composer`; size any other composer with `composer.setSize(w, h, false)`. Without the `false`, a call that resizes the renderer pins inline pixel sizes on the canvas over the stylesheet, and on iOS the canvas then keeps that pixel size as the URL bar collapses, leaving a black band.
 
 ## Appendix — raw wiring
 
