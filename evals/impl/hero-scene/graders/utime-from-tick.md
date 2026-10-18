@@ -5,4 +5,4 @@ target:
   path: src/scene/scenes/home/HomeScene.ts
 ---
 
-\btick(?:Uniforms)?\([^)]*\)\s*(?::\s*\w+\s*)?\{(?:[^{}]|\{[^{}]*\})*(?:\{(?:[^{}]|\{[^{}]*\})*(?:\{[^{}]*)?)?uTime(?:['"]\])?\.value\s*\+?=
+\n([ \t]*)(?:(?:public|private|protected|override)\s+)*tick(?:Uniforms)?\([^)]*\)\s*(?::\s*\w+\s*)?\{(?:(?!\n\1\S)[\s\S])*?(?:uTime(?:['"]\])?\.value\s*\+?=|\.tickUniforms\()
