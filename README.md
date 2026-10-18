@@ -130,9 +130,12 @@ Branch: feat/hero-rim  •  Files audited: 3
   Why: above ~0.1 the whole bright area halos. Raise luminanceThreshold to gate harder instead.
 
 ## Passed
-- threejs-audit: HeroSculpture.ts — custom ShaderMaterial, DPR cap present, composer MSAA wired
+- threejs-audit: HeroSculpture.ts (Tier 3) — custom ShaderMaterial, DPR cap present, composer MSAA wired
 - brand-check: colors resolve to tokens, display face matches the brand reference
 - ship-readiness: no stray logs, no secrets, diff scoped to the task
+
+## Tiers
+- HeroSculpture.ts: Tier 3 — the homepage's lead 3D moment
 
 ## Evidence
 - runtime: not provided

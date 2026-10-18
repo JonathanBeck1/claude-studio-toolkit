@@ -1,6 +1,6 @@
 # Performance Budgets & Profiling
 
-Reference targets for a premium site on mid-tier hardware. A project's own budgets (its CLAUDE.md or docs) override them, and on their own they are not pass/fail. If a scene blows them, redesign rather than patch.
+Reference targets for a premium site on mid-tier hardware. A project's own budgets (its CLAUDE.md or docs) override them, and on their own they are not pass/fail. If a scene blows one, fix the item that blows it; redesign only if the approach itself is the cost.
 
 ## Budgets
 

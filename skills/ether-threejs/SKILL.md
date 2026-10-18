@@ -13,16 +13,16 @@ Invoke this skill before any three.js work on premium-tier deliverables. The ski
 
 ## How to use
 
-1. Read `slop-checklist.md` first. If your planned approach trips any checkbox, redesign before coding.
+1. Read `slop-checklist.md` first and classify the scene's tier (1 utility, 2 branded, 3 hero) from its tier table. If your planned approach trips a check for that tier, change the plan before coding. On an existing scene, make the smallest change that clears the check.
 2. Read `references.md` to find a studio working in the relevant aesthetic. Open its live site for ground truth.
 3. Read the relevant `techniques/` file for a code recipe and required tuning parameters.
 4. Pull GLSL snippets from `shaders/` and import them by the project's configured convention (see the ether-shaders hard rule); don't mix strategies without a reason. The samples use `?raw`, which returns the file verbatim. If the project registers `vite-plugin-glsl`, a `?raw` import bypasses the plugin and gets no `#include` expansion.
-5. After writing code, re-run the slop checklist. Capture a screenshot. Have the user review before committing the rendered scene.
+5. After writing code, re-run the slop checklist for the tier. Capture a screenshot. Have the user review before committing the rendered scene.
 
 ## Index
 
 - **`references.md`** — annotated list of premium agencies and what each does well
-- **`slop-checklist.md`** — concrete anti-patterns. Run before commit.
+- **`slop-checklist.md`** — tier table and concrete anti-patterns. Classify, then run before commit.
 - **`performance.md`** — budgets, profiling techniques, mobile checklist
 - **`techniques/`** — one file per reusable technique with code recipes
 - **`shaders/`** — `.glsl` snippets (e.g. imported via `?raw`). `fresnel.glsl`, `curl-noise.glsl` and `color-grade.glsl` are standalone reference snippets the engine does not ship (the engine grades through `loadLUT` and `LUT3DEffect`). The 8×8 Bayer dither chunk is not copied here; import the engine's: `import { dither } from 'ether/shaders'` (string) or `import dither from 'ether/shaders/dither.glsl?raw'` (file). Those are the specifiers for a git or `file:` install; an npm install (not yet published) uses `@jonathanbeck1/ether/shaders` and `@jonathanbeck1/ether/shaders/dither.glsl?raw`.
