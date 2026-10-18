@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: disposal-leak
+description: Fix seeded lifecycle leaks in an ether scene (a dispose override that skips the tracked drain, an untracked geometry, a Lenis rAF loop that outlives the scene, and an intro whose completion sets up a ScrollTrigger after a mid-intro hop already tore the scene down); graded on each leak, on the engine's one-loop rule, and on claiming nothing unmeasured.
+tags: [implementation, lifecycle]
+context:
+  scaffold_script: scaffold.sh

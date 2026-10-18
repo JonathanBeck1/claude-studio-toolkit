@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: hero-scene
+description: Build the home hero from an empty scene directory; graded on the slop checklist's reject and required items. ether/postfx is not discoverable in the workspace, so most of the plugin-vs-baseline gap here is engine API knowledge.
+tags: [implementation, scene]
+context:
+  scaffold_script: scaffold.sh

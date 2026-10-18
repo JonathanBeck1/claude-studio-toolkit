@@ -231,6 +231,41 @@ that machine, not a description fault, and the report counts it separately.
 The descriptions were hand-tuned with explicit negative scope; the suites
 exist so that any later edit is checked rather than trusted on read.
 
+## Implementation evals
+
+Trigger evals show a skill loads; implementation evals show the output is
+better for it. `evals/impl/` holds five cases for Claude Code's
+`claude plugin eval` (v2.1.269+). Each runs three times with the plugin and
+three times without it, and reports the difference:
+
+| Case | Asks for | Graded on |
+|---|---|---|
+| `hero-scene` | A home hero from an empty scene directory | Slop checklist reject and required items, kit composer fed `quality.msaaSamples`, brand tokens as uniforms, disposal, no unmeasured claims |
+| `persistent-canvas` | The 3D background kept alive across `/` and `/work` (the hero logo links to `/`, so a same-path click reaches `exitTransition`) | `ClientRouter`, `initSceneRouter` with a `'*'` route, no hand-rolled router, inline scroll restoration kept, scroll torn down on exit |
+| `scroll-camera` | A scroll-driven camera dolly with smooth scroll | `ether-scroll` hard rules: `createScrollProgress` with no `scrub`, tier-gated bridge pumped from `tick`, raw progress smoothed in `tick`, paired teardown |
+| `disposal-leak` | A fix for seeded lifecycle leaks in an ether scene | The tracked drain, the untracked geometry, a Lenis rAF loop that outlives the scene and the one-loop rule (bridge pumped from `tick`), an intro whose completion creates a trigger after a mid-intro hop, and not calling it fixed without a measurement |
+| `review-withholds-ready` | A review of a statically clean diff, given in the prompt, that changes rendered output | No READY without visual evidence, a named rendered check when the verdict waits on one, no edits |
+
+Each case's `scaffold.sh` copies `evals/fixture/` into the run's workspace
+and seeds the case. Run from the repo root:
+
+```bash
+claude plugin eval . --scaffold --allow-tools Write Edit "Bash(git diff *)" "Bash(git rev-parse *)"
+```
+
+`--scaffold` runs those scripts and `--allow-tools` lets the implementation
+cases write code; the review case is graded on making no edits. The two git
+grants let `premium-review` establish scope from git the way it would in a
+project; the review prompt also carries its diff, because git can fail inside
+the eval sandbox. Any Bash grant runs every command under Claude Code's OS
+sandbox. Graders are regexes over the files Claude wrote
+plus a few short judge rubrics; skill and `premium-review` dispatch are
+reported as plugin-fired indicators, not scored, except under
+`--ablation none`, where every grader counts. Every run is a real model
+call on your account. To iterate on one case:
+`--case scroll-camera --runs 1 --ablation none`. Results land in
+`evals/results/` (ignored).
+
 ## Provenance
 
 Extracted from the `.claude/` directory of a private studio monorepo, where

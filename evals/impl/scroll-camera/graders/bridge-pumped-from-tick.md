@@ -1,0 +1,8 @@
+---
+type: regex
+target:
+  source: file
+  path: src/scene/scenes/home/HomeScene.ts
+---
+
+\btick\([^)]*\)\s*(?::\s*\w+\s*)?\{(?:[^{}]|\{[^{}]*\})*\.raf\(\s*\w+\s*\)
