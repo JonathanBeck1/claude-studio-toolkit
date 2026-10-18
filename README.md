@@ -41,7 +41,8 @@ for a developer in devtools, a CI job or a Playwright test. There is no shared
 code. The toolkit reads ether's documented contract, so a project installs
 nothing extra.
 
-**Compatibility.** Toolkit 0.2 and later support ether 1.2+. The `/threejs-audit`
+**Compatibility.** Toolkit 0.2 and later support ether 1.2+, and 0.5 documents
+ether 1.3 behaviour where marked. The `/threejs-audit`
 runtime layer reads `SceneManager.getDiagnostics()`, added in ether 1.2; the
 audit detects it by the method's presence, not by version. Against an ether
 build without it the source layer runs unchanged and the runtime layer

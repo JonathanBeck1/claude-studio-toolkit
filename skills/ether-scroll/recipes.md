@@ -191,6 +191,13 @@ Centralize the kills in one private helper rather than spelling them out in `dis
 
 **`exitTransition()` is the path that matters for view transitions.** The engine's `src/astro/router.ts` binds `astro:before-swap` (and only that) and calls `SceneManager.transitionTo()` from it; the dispatch runs the outgoing scene's `exitTransition()` synchronously up to its first `await`, so triggers and Lenis detach BEFORE Astro mutates the DOM and resets scroll. `dispose()` calling the same helper is the backstop, not the primary. Nothing in ether binds `beforeunload` (1.0–1.1 detached the manager on it) or calls `manager.destroy()` on the way out — tab teardown is the browser's problem. Skip the kill on the exit path and `transition:persist` ghosts the old triggers: they keep firing against the new scene.
 
+**ether 1.3+, in a `BaseScene` subclass:** `track()` also takes these handles and the bridge (it calls their `kill()` or `destroy()`), so wrapping each one where it is created makes the base `dispose()` the backstop and `dispose()` no longer needs to call `killTriggers()`. The exit path does not change: `exitTransition()` still calls `killTriggers()` and destroys the bridge before its first `await`, because `dispose()` comes too late for the swap.
+
+```ts
+this.driftTrigger = this.track(createScrollProgress((p) => { this.driftTarget = p; }, { end: DRIFT_TRIGGER_END }));
+this.scroll = quality.enableSmoothScroll ? this.track(new ScrollBridge({ /* §1 options */ })) : null;
+```
+
 **Adding a trigger? You also add the `.kill()` to `killTriggers()`. Same commit. Always paired.**
 
 ---

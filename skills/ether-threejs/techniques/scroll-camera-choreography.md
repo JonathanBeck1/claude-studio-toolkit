@@ -15,7 +15,7 @@ This is the wrong pattern for: ambient hero scenes where the camera should orbit
 `ether/scroll` owns the Lenis ↔ ScrollTrigger integration. Two exports carry the whole pattern:
 
 - **`ScrollBridge`** wraps a Lenis instance and owns the three things site code keeps getting wrong: registering the ScrollTrigger plugin (idempotently, so HMR and repeated scene construction don't churn it), wiring `lenis.on('scroll', ScrollTrigger.update)` so ScrollTrigger reads the smoothed position, and converting the monotonic **seconds** a scene tick receives into the **milliseconds** Lenis expects. Methods: `raf(timeSeconds)`, `scrollTo(target, opts)`, `destroy()`.
-- **`createScrollProgress(onProgress, options)`** makes one onUpdate-only ScrollTrigger that maps scroll progress `0..1` to a callback — the reusable "scroll drives a 3D value" shape. It registers the plugin on first use, so it also works with no bridge at all (the native-scroll path). Returns `{ trigger, kill() }`; call `kill()` in `exitTransition()` before its first `await`, and again in `dispose()`.
+- **`createScrollProgress(onProgress, options)`** makes one onUpdate-only ScrollTrigger that maps scroll progress `0..1` to a callback — the reusable "scroll drives a 3D value" shape. It registers the plugin on first use, so it also works with no bridge at all (the native-scroll path). Returns `{ trigger, kill() }`; call `kill()` in `exitTransition()` before its first `await`, and again in `dispose()` (on ether 1.3+, passing the handle to `this.track()` covers the second).
 
 Event-style triggers — class and attribute toggles on enter/leave, section reveals — stay in site code. They are site-specific and not worth abstracting.
 
@@ -122,6 +122,8 @@ override dispose(): void {
   super.dispose();
 }
 ```
+
+On ether 1.3+ `track()` takes these handles and the bridge, so tracking them where they are created replaces this override: `this.cameraTrigger = this.track(createScrollProgress(...))`, and `this.track(new ScrollBridge({...}))` in `initScrollBridge()`. The kills in `exitTransition()` stay.
 
 **Do not expect `scrub` to smooth this.** `createScrollProgress` builds an `onUpdate`-only trigger, and GSAP only constructs its scrub tween for a trigger with an attached `animation` — `onProgress` always receives raw progress. Omit `scrub` and smooth in your own tick, as above. Some values *want* raw progress: anything page-anchored (an element that must track the scroll pixel-for-pixel) will visibly swim against the page if you smooth it.
 

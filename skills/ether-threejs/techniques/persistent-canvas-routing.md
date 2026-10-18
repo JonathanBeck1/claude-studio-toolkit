@@ -142,13 +142,26 @@ routes that should share a world reference the same function object:
   stays alive across the DOM swap and plays its own continuous
   transition. `attachSceneManager` de-duplicates wrappers by factory
   identity precisely so this comparison can match; two routes that inline
-  two separate arrow functions can never take this path.
+  two separate arrow functions can never take this path. On ether 1.3+ a
+  scene halted because its `tick` or render threw is rebuilt instead.
 
 Hop order otherwise: exit old → dispose old → construct next → size to
 the canvas box → preload → activate → enter. Exit runs first so scene
 resource lifetimes are strictly disjoint. **`enterTransition` is not
 awaited by the queue** — a navigation during a long intro interrupts it
 via `dispose`.
+
+On ether 1.3+ a hop overtaken by a navigation to a different route that
+resolves to a scene (its own or `'*'`) is abandoned, so the intermediate
+routes of a burst never go live. If the newer route is already queued
+when the outgoing scene finishes exiting, the overtaken route's factory
+never runs; if it arrives during `preload()`, the scene built for the
+overtaken route is disposed without activating or entering, so
+`dispose()` must not assume `enterTransition()` ran. A queued navigation
+to the same route, forced or not, lets the hop finish, and a preloaded
+scene that implements `retarget` still activates when the newer route
+shares its factory, then is retargeted. On 1.2 the hop in flight
+activates and enters before the queue moves on.
 
 ### Per-scene contract — every scene must implement this interface
 
@@ -167,7 +180,9 @@ covering a case the required six cannot:
 `BaseScene` implements the boilerplate: it builds the `THREE.Scene` and a
 `PerspectiveCamera` (defaults fov 50, near 0.1, far 100, z 4 — all
 overridable through `super({...})`), gives you `track()` for disposables,
-and drains them in `dispose()`.
+and drains them in `dispose()`. On ether 1.3+ it tears them down newest
+first and runs every teardown even when one throws, then rethrows (an
+`AggregateError` when several threw).
 
 ```ts
 // your site: src/scene/scenes/home/HomeScene.ts
@@ -259,6 +274,8 @@ export class ParkScene implements Scene {
 ```
 
 **What belongs in `track()`:** `BufferGeometry`, `Material` (and all subclasses), `Texture`, `WebGLRenderTarget`, `EffectComposer` — anything with a `dispose()`. Meshes and Groups do not hold GPU memory; the geometry and material they reference do.
+
+On ether 1.3+ `track()` also takes anything with `kill()` (GSAP tweens, timelines, ScrollTriggers), `destroy()` (the `ScrollBridge`, Lenis), `disconnect()` (Resize, Intersection and Mutation observers) or `revert()`, or a plain teardown function, and `this.listen(target, type, handler, options?)` adds an event listener and tracks its removal. So `this.intro = this.track(gsap.fromTo(...))` replaces the `dispose()` override above. Track a `gsap.context` or `gsap.matchMedia` as `() => ctx.revert()`: passed directly it is killed, which skips the cleanup functions its callbacks return and leaves inline styles in place. Timing does not change: ScrollTriggers and the bridge are still killed or destroyed in `exitTransition()` before its first `await`, and the bridge is still built at the start of `enterTransition()`.
 
 ### Routing through the kit — `initSceneRouter` (the shipped pattern)
 

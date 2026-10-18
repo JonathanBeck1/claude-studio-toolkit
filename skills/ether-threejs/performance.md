@@ -64,7 +64,7 @@ For draw calls, read the runtime snapshot (below). On a kit composer, scene draw
 ## Tooling
 
 - **Spector.js** — browser extension. Captures a single WebGL frame. Inspect every draw call, every shader, every uniform. Indispensable for debugging custom shaders.
-- **`Stats` (`ether/dev`)** — the engine's own overlay: FPS and mean frame interval (1000/FPS, not work time), GPU tier, applied DPR, the quality profile's postFX flags (not whether a composer is running) and window size (not the canvas box). No memory readout — use the DevTools Memory tab for that. Mount it behind a `?stats` query param and import it dynamically so it ships zero bytes when the param is absent.
+- **`Stats` (`ether/dev`)** — the engine's own overlay. On ether 1.3+ its rows read `getDiagnostics()`: FPS (`performance.fps`, the manager loop's), CPU (`performance.cpuMs`: main-thread ms per tick, not GPU time), TIER (`quality.tier`), DPR (`rendering.dpr`, applied), FX (`postFX.passes`: the live composer's enabled passes, or `OFF` without one), CALLS and TRIS (`rendering.drawCalls`/`triangles`: the last frame, composer passes included); VIEW reads the canvas drawing-buffer size, not the window. FPS and CPU read `--` until the loop closes a sample window. On 1.2 the rows are FPS and MS (mean frame interval, 1000/FPS, not work time), TIER, DPR (applied), FX (the quality profile's postFX flags, not whether a composer is running) and VIEW (window size, not the canvas box). No memory readout — use the DevTools Memory tab for that. Mount it behind a `?stats` query param and import it dynamically so it ships zero bytes when the param is absent.
 - **Runtime snapshot (`manager.getDiagnostics()`, ether 1.2+)**: JSON from the live engine. See below.
 - **Chrome DevTools Coverage tab** — finds unused JS / CSS that's bloating the bundle.
 - **Lighthouse** — periodic checks for FCP / LCP. Run from CI.
@@ -132,12 +132,13 @@ Hop by clicking in-page links or calling the app's own router, never `page.goto`
 | Reading | Meaning | Severity |
 |---|---|---|
 | `frames` frozen while visible and active | Loop died | CRITICAL |
-| `failures` > 0 | A hop or enter threw; `lastError` has route and message | CRITICAL on a shipped route |
+| `failures` > 0 | A hop, enter or (ether 1.3+) frame threw; `lastError` has route and message (`"<route>: tick: <message>"` or `"<route>: render: <message>"` for a frame) | CRITICAL on a shipped route |
 | `phase` stuck at `exiting`/`loading` | Exit or preload never settles | CRITICAL |
 | `active` but `entered` false long after load | `enterTransition` never settled | WARN |
 | `fallback` true on a real page | No registration for that route | WARN unless it is the 404 |
 | `skipped` `'zero-size'` | Canvas CSS-hidden | WARN if unintended |
 | `skipped` `'renders-false'` with `drawCalls` > 0 | Park scene renders offscreen | NOTE |
+| `skipped` `'faulted'` (ether 1.3+) | The live scene's `tick()` or render threw; the loop stopped ticking and rendering it until a navigation replaces it (a rebuild, never a retarget), and a bridge its `tick` pumps stops with it. On 1.2 the same throw stops the loop (`frames` frozen) | CRITICAL on a shipped route |
 | `contextLost` true | Context lost | CRITICAL unless induced |
 | `postFX.enabled` disagrees with source | Composer not assigned, or a composer on a park route | WARN |
 | `postFX.enabled` and `postFX.msaa` ≠ `quality.msaaSamples` | Composer not fed the profile (`msaa` is the requested count; the GPU may clamp it) | WARN |
