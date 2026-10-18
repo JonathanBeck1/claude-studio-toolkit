@@ -6,4 +6,4 @@ target:
 weight: 2
 ---
 
-super\.dispose\(\)
+super\.dispose\(\)|^(?![\s\S]*\bdispose\(\)\s*(?::\s*\w+\s*)?\{)[\s\S]*class\s+HomeScene

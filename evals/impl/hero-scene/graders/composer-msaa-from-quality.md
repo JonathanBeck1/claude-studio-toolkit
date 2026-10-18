@@ -5,4 +5,4 @@ target:
   path: src/scene/scenes/home/HomeScene.ts
 ---
 
-multisampling:\s*(this\.)?quality\.msaaSamples
+multisampling:\s*(?:(?:this\.)?\w+\.)?msaaSamples\b

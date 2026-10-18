@@ -6,4 +6,4 @@ target:
 weight: 2
 ---
 
-^(?![\s\S]*Mesh(Standard|Basic|Lambert|Phong)Material)[\s\S]*ShaderMaterial
+^(?=[\s\S]*(ShaderMaterial|onBeforeCompile))(?:(?=[\s\S]*onBeforeCompile)|(?![\s\S]*Mesh(Standard|Basic|Lambert|Phong)Material))[\s\S]*class\s+HomeScene

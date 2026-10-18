@@ -5,4 +5,4 @@ target:
   path: src/scene/scenes/home/HomeScene.ts
 ---
 
-^(?![\s\S]*(OrbitControls|UnrealBloomPass|three/examples|three/addons))[\s\S]*class\s+HomeScene
+^(?![\s\S]*(OrbitControls|UnrealBloomPass|(jsm|addons)/postprocessing))[\s\S]*class\s+HomeScene

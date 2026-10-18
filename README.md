@@ -240,21 +240,25 @@ three times without it, and reports the difference:
 | `persistent-canvas` | The 3D background kept alive across `/` and `/work` | `ClientRouter`, `initSceneRouter` with a `'*'` route, no hand-rolled router, inline scroll restoration kept, scroll torn down on exit |
 | `scroll-camera` | A scroll-driven camera dolly with smooth scroll | `ether-scroll` hard rules: `createScrollProgress` with no `scrub`, tier-gated bridge pumped from `tick`, raw progress smoothed in `tick`, paired teardown |
 | `disposal-leak` | A fix for a seeded leak | The tracked drain, the untracked geometry and texture, the stray listener, and not calling it fixed without a measurement |
-| `review-withholds-ready` | A review of a clean diff that changes rendered output | No READY without visual evidence, no edits |
+| `review-withholds-ready` | A review of a statically clean diff that changes rendered output | No READY without visual evidence, a named rendered check when the verdict waits on one, no edits |
 
 Each case's `scaffold.sh` copies `evals/fixture/` into the run's workspace
 and seeds the case. Run from the repo root:
 
 ```bash
-claude plugin eval . --scaffold --allow-tools Write Edit
+claude plugin eval . --scaffold --allow-tools Write Edit "Bash(git diff *)" "Bash(git rev-parse *)"
 ```
 
 `--scaffold` runs those scripts and `--allow-tools` lets the implementation
-cases write code; the review case is graded on making no edits. Graders are
-regexes over the files Claude wrote plus a few short judge rubrics; skill
-and `premium-review` dispatch are reported as plugin-fired indicators, not
-scored. Every run is a real model call on your account. To iterate on one
-case: `--case scroll-camera --runs 1 --ablation none`. Results land in
+cases write code; the review case is graded on making no edits. The two git
+grants let the review case read its uncommitted diff the way
+`premium-review` establishes scope; any Bash grant runs every command under
+Claude Code's OS sandbox. Graders are regexes over the files Claude wrote
+plus a few short judge rubrics; skill and `premium-review` dispatch are
+reported as plugin-fired indicators, not scored, except under
+`--ablation none`, where every grader counts. Every run is a real model
+call on your account. To iterate on one case:
+`--case scroll-camera --runs 1 --ablation none`. Results land in
 `evals/results/` (ignored).
 
 ## Provenance

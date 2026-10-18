@@ -4,4 +4,4 @@ match: not_contains
 flags: i
 ---
 
-verdict\W{0,4}ready\b
+verdict\W{0,8}ready\b

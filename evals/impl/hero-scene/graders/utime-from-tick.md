@@ -5,4 +5,4 @@ target:
   path: src/scene/scenes/home/HomeScene.ts
 ---
 
-tick\([^)]*\)[^{]*\{[\s\S]*uTime\.value\s*\+?=
+\btick\([^)]*\)\s*(?::\s*\w+\s*)?\{(?:[^{}]|\{[^{}]*\})*uTime\.value\s*\+?=

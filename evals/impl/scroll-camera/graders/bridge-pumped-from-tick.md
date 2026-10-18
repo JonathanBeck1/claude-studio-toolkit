@@ -5,4 +5,4 @@ target:
   path: src/scene/scenes/home/HomeScene.ts
 ---
 
-tick\([^)]*\)[^{]*\{[^}]*\.raf\(\s*\w+\s*\)
+\btick\([^)]*\)\s*(?::\s*\w+\s*)?\{(?:[^{}]|\{[^{}]*\})*\.raf\(\s*\w+\s*\)
