@@ -107,7 +107,7 @@ suites for the skill descriptions — see [Evals](#evals).
 2. Run `premium-review` on the diff, passing any evidence from the session verbatim (Evidence blocks, snapshot JSON, CI logs, your visual confirmation).
 3. Triage: Critical aborts; Should fix and NEEDS VISUAL VERIFICATION continue only on your explicit yes.
 4. Draft a conventional commit, show it with the diff summary, and commit only after you confirm. It stages named paths, lets hooks run, and passes `--no-verify` only if you explicitly ask.
-5. Push (setting upstream if needed; never to the default branch without instruction), then offer a PR via `gh pr create` and open it only on confirmation.
+5. Push, setting upstream if needed. On the default branch it stops unless you asked to push there and offers to branch first (`git switch -c <branch>`). Then it offers a PR via `gh pr create` and opens it only on confirmation.
 
 ### Agents (`agents/`)
 
