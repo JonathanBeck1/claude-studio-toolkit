@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install PyYAML
+        run: pip install pyyaml==6.0.2
+
+      - name: Manifests, trigger files, frontmatter and links
+        run: python3 scripts/check.py
+
+      - name: Compile scripts
+        run: python3 -m py_compile scripts/run_evals.py
+
+      - name: Shellcheck hooks
+        run: shellcheck hooks/*.sh
+
+      - name: Plugin validate
+        run: npx -y @anthropic-ai/claude-code@2.1.302 plugin validate . --strict

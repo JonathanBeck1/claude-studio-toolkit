@@ -43,6 +43,9 @@ Produce a single punch list in this format:
 ### Passed
 - <category>: <what was actually inspected>
 
+### Tiers
+- <threejs-audit's Tiers block, copied as-is, when it ran>
+
 ### Evidence
 - <threejs-audit's Evidence block, copied as-is, when it ran>
 

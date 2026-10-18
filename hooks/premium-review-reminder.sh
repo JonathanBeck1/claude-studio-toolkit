@@ -19,10 +19,10 @@ case "$cmd" in
   *"git commit"*)
     staged=$(git -C "${CLAUDE_PROJECT_DIR:-.}" diff --cached --name-only 2>/dev/null || true)
     if printf '%s\n' "$staged" | grep -qE "${STUDIO_DELIVERABLE_RE:-(^|/)src/(scene|components|styles)/}"; then
-      cat <<'EOF'
+      python3 -c 'import json,sys; print(json.dumps({"hookSpecificOutput": {"hookEventName": "PreToolUse", "additionalContext": sys.stdin.read()}}))' <<'EOF'
 [hook:premium-review-reminder] Staged changes touch deliverable paths.
-Confirm `premium-review` has run since the last code change. If not, abort the
-commit and run it now — `premium-review` chains threejs-audit + brand-check +
+If `premium-review` has not run since the last code change, tell the user and
+run it before pushing — `premium-review` chains threejs-audit + brand-check +
 ship pre-commit checklist. This hook does not block; it relies on you to do
 the right thing.
 EOF
