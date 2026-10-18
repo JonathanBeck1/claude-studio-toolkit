@@ -23,7 +23,7 @@ this.scroll = quality.enableSmoothScroll
 ```
 
 Key points:
-- **Conditional construction.** `quality.enableSmoothScroll` is `tier !== 'LOW'` (`src/quality/quality.ts`). When the bridge is null, ScrollTrigger falls back to native scroll events. Don't paper over the null with a fake bridge — the fallback works.
+- **Conditional construction.** `quality.enableSmoothScroll` is `tier !== 'LOW' && !reducedMotion` (`src/quality/quality.ts`); ether 1.0–1.1 used `tier !== 'LOW'` and lowered the tier one step under reduced motion instead. When the bridge is null, ScrollTrigger falls back to native scroll events. Don't paper over the null with a fake bridge — the fallback works.
 - **Options pass through verbatim to `new Lenis(...)`.** Feel tuning (duration, multipliers, inertia exponent) lives in your site's constants module. Tune the feel there, not inline.
 - **`syncTouch: true`** is the fix for choppy mobile scroll-to-3D. The folk advice ("syncTouch fights iOS, leave it false") is wrong for scroll-driven 3D: native iOS scroll arrives in coarse stepped compositor bursts, so binding the 3D to it reads as choppy. `syncTouch` (Lenis 1.3+) smooths ON TOP of native momentum — it does not hijack scroll — giving touch the same rAF-synced position desktop has. `touchInertiaExponent` shapes the post-flick glide decay (Lenis default 1.7); the per-frame interpolation that smooths iOS's stepped input is `syncTouchLerp` (leave it at its default). With Lenis live on touch, the old touch-only damping compensation is no longer needed — it was only masking the missing inertial layer.
 
@@ -189,7 +189,7 @@ private killTriggers(): void {
 
 Centralize the kills in one private helper rather than spelling them out in `dispose()`, and call it from every exit path — `exitTransition()`, `dispose()`, and any in-session reset — each followed by `this.scroll?.destroy(); this.scroll = null;`. Factory handles get `.kill()` (the `ScrollProgressTrigger` wraps the underlying instance); inline triggers get `.kill()`; the bridge gets `.destroy()` (tears down Lenis + its scroll listener). Null the fields as you go so a second call is a no-op.
 
-**`exitTransition()` is the path that matters for view transitions.** The engine's `src/astro/router.ts` binds `astro:before-swap` (and only that) and calls `SceneManager.transitionTo()` from it; the dispatch runs the outgoing scene's `exitTransition()` synchronously up to its first `await`, so triggers and Lenis detach BEFORE Astro mutates the DOM and resets scroll. `dispose()` calling the same helper is the backstop, not the primary. The router binds no `beforeunload` and calls no `manager.destroy()` — tab teardown is the browser's problem. Skip the kill on the exit path and `transition:persist` ghosts the old triggers: they keep firing against the new scene.
+**`exitTransition()` is the path that matters for view transitions.** The engine's `src/astro/router.ts` binds `astro:before-swap` (and only that) and calls `SceneManager.transitionTo()` from it; the dispatch runs the outgoing scene's `exitTransition()` synchronously up to its first `await`, so triggers and Lenis detach BEFORE Astro mutates the DOM and resets scroll. `dispose()` calling the same helper is the backstop, not the primary. Nothing in ether binds `beforeunload` (1.0–1.1 detached the manager on it) or calls `manager.destroy()` on the way out — tab teardown is the browser's problem. Skip the kill on the exit path and `transition:persist` ghosts the old triggers: they keep firing against the new scene.
 
 **Adding a trigger? You also add the `.kill()` to `killTriggers()`. Same commit. Always paired.**
 
@@ -214,7 +214,7 @@ Order:
 3. Store the handle on the scene (`this.fooTrigger`).
 4. Add the `.kill()` to `killTriggers()` in the same commit.
 5. Pull thresholds and smoothing settle times from your constants module if reusable, else inline with a one-line comment.
-6. Test the no-bridge fallback (LOW tier: bridge null, native scroll). Scroll feel is less buttery but values must still drive correctly. Touch is NOT a fallback case — it runs the bridge.
+6. Test the no-bridge fallback (LOW tier or reduced motion: bridge null, native scroll). Scroll feel is less buttery but values must still drive correctly. Touch is NOT a fallback case — it runs the bridge.
 
 ---
 

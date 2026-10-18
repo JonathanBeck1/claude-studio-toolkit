@@ -266,10 +266,15 @@ export class ParkScene implements Scene {
 for `astro:before-swap`. It owns all of the wiring — route-table
 registration, route normalization, initial-route resolution from the
 address bar, the navigation listener, the single-flight guard, and
-teardown (real teardown only on `beforeunload`; the manager survives
-every swap). It **returns the `SceneManager`**, so site code can reach
-`manager.activeScene` afterwards — for a dev panel, a stats overlay,
-anything that needs to bind to whatever is currently live.
+teardown (the manager survives every swap, and nothing tears it down on
+the way out: a real unload frees it with the document, while
+`beforeunload` also fires when the page stays — `mailto:`, downloads, a
+cancelled leave prompt). It **returns the `SceneManager`**, so site code
+can reach `manager.activeScene` afterwards — for a dev panel, a stats
+overlay, anything that needs to bind to whatever is currently live. For
+what the runtime is actually doing (hop phase, draw counts, applied DPR,
+the composer running), read `manager.getDiagnostics()` (ether 1.2+; see
+`performance.md`).
 
 ```ts
 // your site: src/scene/boot.ts
@@ -361,7 +366,7 @@ await new Promise<void>((resolve) => {
 
 4. **Resizing mid-transition — already handled, and not by a `window.resize` listener.** A naive handler fires on every `resize` event and reaches for `activeScene.camera`, which mid-swap is either disposed or not yet active. The shipped manager avoids the whole class of problem: a `ResizeObserver` watches the **canvas's CSS box** (not `window.inner*`, which diverges from it whenever mobile browser chrome is in play), the callback is debounced 150ms so an iOS URL-bar collapse coalesces into one resize instead of eight, and identical dimensions short-circuit. When it lands it calls `sizeScene` — camera aspect, `composer.setSize(w, h, false)`, then the scene's own `onResize(w, h)` hook. And `runTransition` sizes each new scene to the canvas box *before* `preload()` (which is where scenes render their warm-up frame), then re-checks afterwards in case a resize landed while there was no active scene to receive it. Your part is `onResize` for scene-specific responsive tuning. Note the `updateStyle: false` everywhere: the stylesheet owns the canvas box, and letting three.js write inline pixel heights is what pins a boot-sized canvas under a growing iOS viewport, leaving a permanent black band.
 
-5. **Multiple navigation listeners accumulate.** If a navigation `addEventListener` call lives inside a component `<script>` re-evaluated after each swap, each navigation adds one more listener and scene transitions multiply per hop — race condition, GPU memory leak, or runtime error depending on timing. `initSceneRouter` handles this: the single-flight guard means one manager per canvas, the adapter's `bind` registers exactly one persistent `astro:before-swap` listener, its returned unbind removes it, and `beforeunload` is the only thing that triggers real teardown. The listener also guards itself with `attached.isCurrent()`, so a displaced manager's listener cannot drive transitions on the corpse. Only hand-rolled routers need module-scope or body-dataset guard patterns.
+5. **Multiple navigation listeners accumulate.** If a navigation `addEventListener` call lives inside a component `<script>` re-evaluated after each swap, each navigation adds one more listener and scene transitions multiply per hop — race condition, GPU memory leak, or runtime error depending on timing. `initSceneRouter` handles this: the single-flight guard means one manager per canvas, the adapter's `bind` registers exactly one persistent `astro:before-swap` listener, its returned unbind removes it, and only a displacing boot tears the manager down (or `detach()` on an `Attachment`, if you call `attachSceneManager` directly; never `beforeunload`, which also fires when the page stays). The listener also guards itself with `attached.isCurrent()`, so a displaced manager's listener cannot drive transitions on the corpse. Only hand-rolled routers need module-scope or body-dataset guard patterns.
 
 6. **The WebGL context can be lost, and nothing tells you.** iOS Safari drops contexts under memory pressure — multiple tabs, an app switch, OS pressure — and without a handler the canvas becomes a permanent white rectangle until reload. `SceneManager` catches `webglcontextlost`, calls `preventDefault()` (required, or the browser treats the context as permanently dead and never fires `webglcontextrestored`), and sets `data-webgl-lost` on `<body>` so CSS can show a fallback poster. Note what it keeps running: `tick` still executes on every frame, because it is CPU-side math *and* it pumps the scene's scroll bridge — skipping it turns a blank canvas into an unscrollable page. Only the GPU render calls are skipped.
 

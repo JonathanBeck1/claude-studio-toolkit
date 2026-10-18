@@ -35,7 +35,7 @@ Before committing any scene-touching code:
 2. Open the screenshot next to the closest reference studio's live page (URLs in `references.md`). If the gap is obvious, redesign.
 3. Run through the Reject checklist. If any box ticks, fix before commit.
 4. Run through the Required checklist. If any box does NOT tick, fix before commit.
-5. Profile on Chrome DevTools Performance tab. Confirm 60 FPS on a mid-tier laptop, frame budget under 16ms.
+5. Profile on the Chrome DevTools Performance tab (ether's runtime snapshot `fps` can corroborate it per `performance.md`'s evidence rules). Confirm 60 FPS on a mid-tier laptop.
 6. If a real device is available, profile on a 2-year-old iPhone. Confirm sustained 30+ FPS.
 7. Push the screenshot to the brainstorming visual companion (or share with the user) for art-direction review BEFORE committing the underlying scene code.
 

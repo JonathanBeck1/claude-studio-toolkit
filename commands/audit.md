@@ -43,6 +43,9 @@ Produce a single punch list in this format:
 ### Passed
 - <category>: <what was actually inspected>
 
+### Evidence
+- <threejs-audit's Evidence block, copied as-is, when it ran>
+
 ### Recommended next step
 - <e.g. "run /ship", "fix critical findings first">
 ```

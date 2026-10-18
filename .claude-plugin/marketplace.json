@@ -1,6 +1,6 @@
 {
   "name": "studio-toolkit",
-  "description": "Skills, commands, hooks, and agents for premium three.js / WebGL web work.",
+  "description": "Claude Code plugin for building premium sites on the ether WebGL engine: skills, audits, hooks, and a review agent.",
   "owner": {
     "name": "Jonathan Beck"
   },
@@ -8,7 +8,7 @@
     {
       "name": "claude-studio-toolkit",
       "source": "./",
-      "description": "Slop checklist, shader and scroll recipes for the ether engine, remind-only quality hooks, and a read-only review agent."
+      "description": "Slop checklist, shader and scroll recipes for the ether engine, audit commands, remind-only quality hooks, and a read-only review agent."
     }
   ]
 }
