@@ -6,7 +6,7 @@
   },
   "plugins": [
     {
-      "name": "claude-studio-toolkit",
+      "name": "studio-toolkit",
       "source": "./",
       "description": "Slop checklist, shader and scroll recipes for the ether engine, audit commands, remind-only quality hooks, and a read-only review agent."
     }

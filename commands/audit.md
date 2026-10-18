@@ -16,8 +16,8 @@ Categorize the target files:
 **Step 2 — Run the right audits.**
 
 For each category in scope:
-- Scene/shader → run `/threejs-audit $ARGUMENTS` (`/claude-studio-toolkit:threejs-audit` when installed as a plugin), or apply `commands/threejs-audit.md` directly.
-- Component/styling → run `/brand-check $ARGUMENTS` (`/claude-studio-toolkit:brand-check` as a plugin).
+- Scene/shader → run `/threejs-audit $ARGUMENTS` (`/studio-toolkit:threejs-audit` when installed as a plugin), or apply `commands/threejs-audit.md` directly.
+- Component/styling → run `/brand-check $ARGUMENTS` (`/studio-toolkit:brand-check` as a plugin).
 - TypeScript logic → invoke the `code-review` skill or do a careful read-pass yourself; surface correctness bugs and slop indicators specific to this project (defensive code for impossible cases, premature abstractions, three similar lines becoming a function, missing verification of feature completion).
 - Markdown → spot-check tone against the repo's standards (`CLAUDE.md`). Flag emoji usage, AI-listicle phrasing, multi-paragraph docstrings.
 

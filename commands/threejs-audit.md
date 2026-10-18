@@ -5,7 +5,7 @@ argument-hint: [file path or directory — defaults to the build CLAUDE.md names
 
 Audit the target three.js code for premium-quality issues. Target: $ARGUMENTS. With no argument, resolve the scope from `CLAUDE.md` — the path it names as the active build — and scan that path's `src/` for `.ts`, `.js`, `.glsl`, `.vert`, `.frag` files that import three.js.
 
-**Mandatory first step:** invoke the `ether-threejs` skill (`claude-studio-toolkit:ether-threejs` as a plugin). The skill contains the slop checklist, vetted recipes, performance budgets, and reusable GLSL snippets. Do not audit from memory or generic three.js knowledge.
+**Mandatory first step:** invoke the `ether-threejs` skill (`studio-toolkit:ether-threejs` as a plugin). The skill contains the slop checklist, vetted recipes, performance budgets, and reusable GLSL snippets. Do not audit from memory or generic three.js knowledge.
 
 **Audit categories** (use the skill's checklist as canonical — these are the headline checks):
 
