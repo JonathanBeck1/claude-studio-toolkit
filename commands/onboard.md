@@ -5,7 +5,7 @@ argument-hint: [no args — fires the full ritual]
 
 This ritual is a template. Every step reads the project's own files rather than any particular project's layout — adapt the steps to what this repo actually has, and drop the ones it has no file for.
 
-Invoke the `studio-onboard` skill (`claude-studio-toolkit:studio-onboard` when installed as a plugin). Run the full ritual end-to-end:
+Invoke the `studio-onboard` skill (`studio-toolkit:studio-onboard` when installed as a plugin). Run the full ritual end-to-end:
 
 1. Greet (read `tour.md` Opening).
 2. Verify environment (`git rev-parse --show-toplevel`, `node --version` against the repo's `engines` field, `node_modules/` present where the app lives).

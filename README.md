@@ -41,7 +41,7 @@ for a developer in devtools, a CI job or a Playwright test. There is no shared
 code. The toolkit reads ether's documented contract, so a project installs
 nothing extra.
 
-**Compatibility.** Toolkit 0.2 supports ether 1.2+. The `/threejs-audit`
+**Compatibility.** Toolkit 0.2 and later support ether 1.2+. The `/threejs-audit`
 runtime layer reads `SceneManager.getDiagnostics()`, added in ether 1.2; the
 audit detects it by the method's presence, not by version. Against an ether
 build without it the source layer runs unchanged and the runtime layer
@@ -53,7 +53,7 @@ Install it by name from this repo's marketplace (user scope, every project):
 
 ```bash
 claude plugin marketplace add JonathanBeck1/claude-studio-toolkit
-claude plugin install claude-studio-toolkit@studio-toolkit
+claude plugin install studio-toolkit@studio-toolkit
 ```
 
 Load it for a session:
@@ -65,12 +65,12 @@ claude --plugin-dir /path/to/claude-studio-toolkit
 Or drop it in your skills directory so it loads automatically:
 
 ```bash
-git clone https://github.com/JonathanBeck1/claude-studio-toolkit ~/.claude/skills/claude-studio-toolkit
+git clone https://github.com/JonathanBeck1/claude-studio-toolkit ~/.claude/skills/studio-toolkit
 ```
 
-Everything registers under the `claude-studio-toolkit:` prefix —
-`/claude-studio-toolkit:ship`, the `claude-studio-toolkit:premium-review`
-agent, the `claude-studio-toolkit:ether-threejs` skill (skills also fire on
+Everything registers under the `studio-toolkit:` prefix —
+`/studio-toolkit:ship`, the `studio-toolkit:premium-review`
+agent, the `studio-toolkit:ether-threejs` skill (skills also fire on
 their triggers without being named). Hooks arm on load.
 `claude plugin validate .` passes.
 
