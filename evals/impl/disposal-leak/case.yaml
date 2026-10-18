@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: disposal-leak
+description: Fix a seeded disposal leak (dispose override that skips the tracked drain, an untracked geometry and texture, a pointer listener never removed); graded on each leak and on claiming nothing unmeasured.
+tags: [implementation, lifecycle]
+context:
+  scaffold_script: scaffold.sh

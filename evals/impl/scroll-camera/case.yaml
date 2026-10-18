@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: scroll-camera
+description: Add a scroll-driven camera dolly to a hero with no scroll wiring; graded on the ether-scroll hard rules and slop indicators.
+tags: [implementation, scroll]
+context:
+  scaffold_script: scaffold.sh

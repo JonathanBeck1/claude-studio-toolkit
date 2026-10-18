@@ -1,0 +1,6 @@
+schema_version: "1.1"
+name: review-withholds-ready
+description: Review a statically clean but rendered-output diff with no visual or runtime evidence; the verdict must not be READY and no file may change.
+tags: [review]
+context:
+  scaffold_script: scaffold.sh
