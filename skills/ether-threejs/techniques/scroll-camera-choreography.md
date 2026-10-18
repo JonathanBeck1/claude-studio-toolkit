@@ -15,7 +15,7 @@ This is the wrong pattern for: ambient hero scenes where the camera should orbit
 `ether/scroll` owns the Lenis ↔ ScrollTrigger integration. Two exports carry the whole pattern:
 
 - **`ScrollBridge`** wraps a Lenis instance and owns the three things site code keeps getting wrong: registering the ScrollTrigger plugin (idempotently, so HMR and repeated scene construction don't churn it), wiring `lenis.on('scroll', ScrollTrigger.update)` so ScrollTrigger reads the smoothed position, and converting the monotonic **seconds** a scene tick receives into the **milliseconds** Lenis expects. Methods: `raf(timeSeconds)`, `scrollTo(target, opts)`, `destroy()`.
-- **`createScrollProgress(onProgress, options)`** makes one scrubbed ScrollTrigger that maps scroll progress `0..1` to a callback — the reusable "scroll drives a 3D value" shape. It registers the plugin on first use, so it also works with no bridge at all (the native-scroll path). Returns `{ trigger, kill() }`; call `kill()` in `Scene.dispose`.
+- **`createScrollProgress(onProgress, options)`** makes one onUpdate-only ScrollTrigger that maps scroll progress `0..1` to a callback — the reusable "scroll drives a 3D value" shape. It registers the plugin on first use, so it also works with no bridge at all (the native-scroll path). Returns `{ trigger, kill() }`; call `kill()` in `exitTransition()` before its first `await`, and again in `dispose()`.
 
 Event-style triggers — class and attribute toggles on enter/leave, section reveals — stay in site code. They are site-specific and not worth abstracting.
 
@@ -55,7 +55,9 @@ tick(elapsedSeconds: number): void {
   // ...camera / uniform updates
 }
 
-exit(): void {
+async exitTransition(): Promise<void> {
+  this.cameraTrigger?.kill(); // before any await, so it lets go before the DOM swap
+  this.revealTrigger?.kill();
   this.scroll?.destroy();
   this.scroll = null;
 }
@@ -86,8 +88,10 @@ import * as THREE from 'three';
 import { createScrollProgress, type ScrollProgressTrigger } from 'ether/scroll';
 
 private cameraTrigger: ScrollProgressTrigger | null = null;
+private revealTrigger: ScrollProgressTrigger | null = null;
 private cameraTarget = 0;
 private cameraProgress = 0;
+private revealTarget = 0;
 
 private setupScrollTriggers(): void {
   // Full-page progress: trigger defaults to 'body', start to 'top top'.
@@ -111,8 +115,11 @@ tick(elapsedSeconds: number, dt: number): void {
   this.camera.position.z = THREE.MathUtils.lerp(CAMERA_Z_START, CAMERA_Z_END, this.cameraProgress);
 }
 
-dispose(): void {
+override dispose(): void {
   this.cameraTrigger?.kill();
+  this.revealTrigger?.kill();
+  this.scroll?.destroy();
+  super.dispose();
 }
 ```
 
