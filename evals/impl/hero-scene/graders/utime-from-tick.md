@@ -5,4 +5,4 @@ target:
   path: src/scene/scenes/home/HomeScene.ts
 ---
 
-\btick\([^)]*\)\s*(?::\s*\w+\s*)?\{(?:[^{}]|\{[^{}]*\})*uTime\.value\s*\+?=
+\btick(?:Uniforms)?\([^)]*\)\s*(?::\s*\w+\s*)?\{(?:[^{}]|\{[^{}]*\})*(?:\{(?:[^{}]|\{[^{}]*\})*(?:\{[^{}]*)?)?uTime(?:['"]\])?\.value\s*\+?=

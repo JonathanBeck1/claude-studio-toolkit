@@ -237,10 +237,10 @@ three times without it, and reports the difference:
 | Case | Asks for | Graded on |
 |---|---|---|
 | `hero-scene` | A home hero from an empty scene directory | Slop checklist reject and required items, kit composer fed `quality.msaaSamples`, brand tokens as uniforms, disposal, no unmeasured claims |
-| `persistent-canvas` | The 3D background kept alive across `/` and `/work` | `ClientRouter`, `initSceneRouter` with a `'*'` route, no hand-rolled router, inline scroll restoration kept, scroll torn down on exit |
+| `persistent-canvas` | The 3D background kept alive across `/` and `/work` (the hero logo links to `/`, so a same-path click reaches `exitTransition`) | `ClientRouter`, `initSceneRouter` with a `'*'` route, no hand-rolled router, inline scroll restoration kept, scroll torn down on exit |
 | `scroll-camera` | A scroll-driven camera dolly with smooth scroll | `ether-scroll` hard rules: `createScrollProgress` with no `scrub`, tier-gated bridge pumped from `tick`, raw progress smoothed in `tick`, paired teardown |
-| `disposal-leak` | A fix for a seeded leak | The tracked drain, the untracked geometry and texture, the stray listener, and not calling it fixed without a measurement |
-| `review-withholds-ready` | A review of a statically clean diff that changes rendered output | No READY without visual evidence, a named rendered check when the verdict waits on one, no edits |
+| `disposal-leak` | A fix for seeded lifecycle leaks in an ether scene | The tracked drain, the untracked geometry, a Lenis rAF loop that outlives the scene and the one-loop rule (bridge pumped from `tick`), an intro whose completion creates a trigger after a mid-intro hop, and not calling it fixed without a measurement |
+| `review-withholds-ready` | A review of a statically clean diff, given in the prompt, that changes rendered output | No READY without visual evidence, a named rendered check when the verdict waits on one, no edits |
 
 Each case's `scaffold.sh` copies `evals/fixture/` into the run's workspace
 and seeds the case. Run from the repo root:
@@ -251,9 +251,10 @@ claude plugin eval . --scaffold --allow-tools Write Edit "Bash(git diff *)" "Bas
 
 `--scaffold` runs those scripts and `--allow-tools` lets the implementation
 cases write code; the review case is graded on making no edits. The two git
-grants let the review case read its uncommitted diff the way
-`premium-review` establishes scope; any Bash grant runs every command under
-Claude Code's OS sandbox. Graders are regexes over the files Claude wrote
+grants let `premium-review` establish scope from git the way it would in a
+project; the review prompt also carries its diff, because git can fail inside
+the eval sandbox. Any Bash grant runs every command under Claude Code's OS
+sandbox. Graders are regexes over the files Claude wrote
 plus a few short judge rubrics; skill and `premium-review` dispatch are
 reported as plugin-fired indicators, not scored, except under
 `--ablation none`, where every grader counts. Every run is a real model
