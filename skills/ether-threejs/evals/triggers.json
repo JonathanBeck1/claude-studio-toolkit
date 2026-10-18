@@ -9,6 +9,12 @@
   {"query": "Add scroll-driven camera movement to the three.js hero (the 3D camera choreography side of it)", "should_trigger": true},
   {"query": "I need to instance about 500 meshes in three.js performantly for the hero — what's our budget and approach?", "should_trigger": true},
   {"query": "Building an interactive 3D product viewer in three.js for a client deliverable and I want it premium, not template-y", "should_trigger": true},
+  {"query": "The 3D background flashes black and rebuilds every time someone clicks to another page — keep the scene alive across navigation", "should_trigger": true},
+  {"query": "When you go from the home page to a project page, the hero object should fly into the next page's scene instead of reloading", "should_trigger": true},
+  {"query": "As the visitor scrolls the case study, the camera should orbit the product and settle on each feature in turn", "should_trigger": true},
+  {"query": "Make the camera follow the scroll through the homepage story: push in on the logo, then pull back to reveal the whole scene", "should_trigger": true},
+  {"query": "Each page of the site gets its own 3D scene but they should share one renderer — how do I handle setup, teardown and disposal between pages?", "should_trigger": true},
+  {"query": "Our 3D canvas leaks GPU memory after a few page navigations; fix the scene lifecycle so textures and geometry get disposed between routes", "should_trigger": true},
   {"query": "Review the existing HeroSculpture.ts for slop and tell me what to fix", "should_trigger": false},
   {"query": "Audit our scene code against the slop checklist and report findings", "should_trigger": false},
   {"query": "Animate this DOM hero heading with a GSAP fade-up on page load", "should_trigger": false},
@@ -18,5 +24,8 @@
   {"query": "Set up a Lottie animation for the page loading spinner", "should_trigger": false},
   {"query": "Convert our SVG icon set into an icon font", "should_trigger": false},
   {"query": "Add a CSS parallax effect to the background image in the about section", "should_trigger": false},
-  {"query": "Write unit tests for the scroll utility function", "should_trigger": false}
+  {"query": "Write unit tests for the scroll utility function", "should_trigger": false},
+  {"query": "Add CSS scroll-snap so each full-height section locks into place as you scroll", "should_trigger": false},
+  {"query": "Tighten the bloom threshold in the composer's fragment pass so only the logo highlights glow", "should_trigger": false},
+  {"query": "Keep the audio player playing across page navigations with Astro's transition:persist", "should_trigger": false}
 ]
