@@ -25,7 +25,7 @@ Invoke this skill before any three.js work on premium-tier deliverables. The ski
 - **`slop-checklist.md`** — concrete anti-patterns. Run before commit.
 - **`performance.md`** — budgets, profiling techniques, mobile checklist
 - **`techniques/`** — one file per reusable technique with code recipes
-- **`shaders/`** — `.glsl` snippets (e.g. imported via `?raw`). `dither.glsl` is the chunk the engine ships as `ether/shaders`; `fresnel.glsl`, `curl-noise.glsl` and `color-grade.glsl` are standalone reference snippets the engine does not ship (the engine grades through `loadLUT` and `LUT3DEffect`).
+- **`shaders/`** — `.glsl` snippets (e.g. imported via `?raw`). `fresnel.glsl`, `curl-noise.glsl` and `color-grade.glsl` are standalone reference snippets the engine does not ship (the engine grades through `loadLUT` and `LUT3DEffect`). The 8×8 Bayer dither chunk is not copied here; import the engine's: `import { dither } from 'ether/shaders'` (string) or `import dither from 'ether/shaders/dither.glsl?raw'` (file). Those are the specifiers for a git or `file:` install; an npm install (not yet published) uses `@jonathanbeck1/ether/shaders` and `@jonathanbeck1/ether/shaders/dither.glsl?raw`.
 
 ## Maintenance
 
