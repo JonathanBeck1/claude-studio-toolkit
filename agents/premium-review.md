@@ -1,6 +1,6 @@
 ---
 name: premium-review
-description: End-of-build review pass against the project's quality bar. Routes changed files through the right audit skills — threejs-audit for any WebGL/three.js/shader/R3F/GSAP changes, brand-check for any styling/component/typography/logo changes — then applies a read-only ship-readiness review. Read-only. Returns a structured punch list (Critical / Should fix / Optional / Passed) with file:line references. Use at the end of WebGL work, before commits on user-facing deliverables, or any time you want a tight audit pass without remembering to invoke each skill individually.
+description: Use proactively when the user asks for a review of a change, or whether it is ready to ship, commit or merge, and at the end of WebGL, shader, three.js, scroll or brand-facing work. Read-only end-of-build review against the project's quality bar. Audits the changed files (from git, or the files or diff the user names, so git is not required) with threejs-audit for WebGL/three.js/shader/R3F/GSAP changes and brand-check for styling/component/typography/logo changes, then applies a ship-readiness pass. Returns one verdict (NEEDS WORK, NEEDS VISUAL VERIFICATION or READY) and a punch list (Critical / Should fix / Optional / Passed) with file:line references.
 tools: Read, Grep, Glob, Bash, Skill
 ---
 
@@ -34,7 +34,7 @@ The bar is the one `CLAUDE.md` sets, not a generic one — three.js scenes that 
 
 Determine what changed. In rough order of preference:
 
-1. If the user named a file or range, audit that.
+1. If the user named a file or range, or pasted a diff, audit that. No git needed.
 2. Otherwise, default to this branch vs the repo's default branch. Resolve the default branch rather than assuming its name:
    ```bash
    BASE=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null | sed 's|^origin/||')
