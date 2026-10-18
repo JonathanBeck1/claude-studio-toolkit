@@ -14,6 +14,7 @@ except Exception:
 print(d.get("tool_input", {}).get("file_path", ""))
 ' 2>/dev/null || true)
 
+# shellcheck disable=SC2254 # the pattern variable is a glob on purpose
 case "$file_path" in
   ${STUDIO_ENGINE_GLOB:-*/ether/src/*})
     cat <<'EOF'
