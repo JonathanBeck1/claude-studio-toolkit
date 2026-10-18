@@ -9,7 +9,7 @@ This is a scene class for a persistent-canvas site where scenes are entered, exi
 
 PASS only if all of these hold:
 - Any smooth-scroll bridge (ScrollBridge) is constructed in enterTransition or a helper it calls, never in the constructor or at module scope.
-- Every scroll trigger the scene creates is created after construction (in enterTransition, an intro completion callback, or a helper they call), and is killed on a path reached from exitTransition, with dispose also killing it. On ether 1.3, registering the trigger with `this.track(...)` counts as dispose killing it, because BaseScene.dispose() drains tracked values.
+- Every scroll trigger the scene creates is created after construction (in enterTransition, an intro completion callback, or a helper they call), and is killed on a path reached from exitTransition, with dispose also killing it. The workspace is on ether 1.3, where BaseScene.dispose() kills every trigger passed to `this.track(...)`, so registering the trigger that way counts as dispose killing it if BaseScene.dispose() runs: the class has no dispose() override, or its override calls super.dispose().
 - The bridge, if present, is destroyed on the same exit path.
 - The scroll callback only stores a value; the camera position is updated in tick.
 - tick eases the camera, or the progress value that drives it, toward the stored scroll value over time, rather than copying the raw value straight to the camera each frame.
