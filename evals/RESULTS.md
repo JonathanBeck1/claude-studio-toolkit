@@ -5,12 +5,6 @@ Model `sonnet`, 89 queries, 2026-10-18. Verdict = first `Skill` call within 2 tu
 | Skill | should fire | fired (recall) | absorbed by other skill | should not | fired anyway (FP) |
 |---|---|---|---|---|---|
 | `ether-scroll` | 10 | 10 (100%) | 0 | 10 | 0 |
-| `ether-shaders` | 10 | 9 (90%) | 0 | 10 | 0 |
+| `ether-shaders` | 10 | 10 (100%) | 0 | 10 | 0 |
 | `ether-threejs` | 14 | 14 (100%) | 0 | 15 | 0 |
 | `studio-onboard` | 10 | 10 (100%) | 0 | 10 | 0 |
-
-## Misses
-
-| Skill under test | Expected | Got | Query |
-|---|---|---|---|
-| `ether-shaders` | fire | `(nothing fired)` | The fresnel rim on the sculpture is way too strong, I need to tune the rim mix in the fragment shader |

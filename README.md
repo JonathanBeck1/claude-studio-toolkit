@@ -41,7 +41,8 @@ for a developer in devtools, a CI job or a Playwright test. There is no shared
 code. The toolkit reads ether's documented contract, so a project installs
 nothing extra.
 
-**Compatibility.** Toolkit 0.2 and later support ether 1.2+. The `/threejs-audit`
+**Compatibility.** Toolkit 0.2 and later support ether 1.2+, and 0.5 documents
+ether 1.3 behaviour where marked. The `/threejs-audit`
 runtime layer reads `SceneManager.getDiagnostics()`, added in ether 1.2; the
 audit detects it by the method's presence, not by version. Against an ether
 build without it the source layer runs unchanged and the runtime layer
@@ -218,12 +219,13 @@ Measured 2026-10-18 with `sonnet` ([full report](./evals/RESULTS.md)):
 | Skill | should fire | fired | should not | fired anyway |
 |---|---|---|---|---|
 | `ether-threejs` | 14 | 14 | 15 | 0 |
-| `ether-shaders` | 10 | 9 | 10 | 0 |
+| `ether-shaders` | 10 | 10 | 10 | 0 |
 | `ether-scroll` | 10 | 10 | 10 | 0 |
 | `studio-onboard` | 10 | 10 | 10 | 0 |
 
-Zero false positives across 45 should-not queries; the one miss fired
-nothing rather than the wrong skill. Results move a little between runs — a
+Zero false positives across 45 should-not queries and no misses in this
+run; the ether-shaders fresnel-tuning query missed in three of the four
+runs before it, firing nothing rather than the wrong skill. Results move a little between runs — a
 single flip is noise, a pattern is a description problem. Run with
 `--no-isolate` on a machine with a broad personal skill library and a few
 queries go to adjacent third-party skills instead; that is real behaviour on

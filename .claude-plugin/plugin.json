@@ -1,7 +1,7 @@
 {
   "name": "studio-toolkit",
   "displayName": "Studio Toolkit",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Claude Code plugin for building premium sites on the ether WebGL engine: a slop checklist and technique library, shader and Lenis + ScrollTrigger recipes, audit commands, remind-only quality hooks, and a read-only end-of-build review agent.",
   "author": {
     "name": "Jonathan Beck",

@@ -222,27 +222,25 @@ renderer.outputColorSpace = THREE.SRGBColorSpace;
 
 ## Reference implementation
 
-The shipped version of this technique is the hero sculpture material in
-the site the engine was extracted from:
-`src/shaders/hero/sculpture.frag.glsl` and its matching
-`sculpture.vert.glsl`, wired in `src/scene/scenes/home/HeroSculpture.ts`.
-Read it for three decisions this recipe only describes:
+The reusable part of this technique is the toolkit's own
+`shaders/fresnel.glsl`: `fresnel()` and `iridescence()`, as used in the
+fragment shader above. Three decisions the snippet leaves to you:
 
-- **Two lights, not zero.** A warm key plus a cool fill at 35% keeps
-  back-facing slabs off dead black. A pure fresnel term over an unlit
+- **Two lights, not zero.** A warm key plus a dimmer cool fill keeps
+  back-facing surfaces off dead black. A pure fresnel term over an unlit
   base gives you a glowing outline around a void; the fill is what makes
   it read as a solid object.
-- **The rim is capped, not additive.** The fresnel term drives a `mix`
-  toward the rim color at 60% maximum, so the silhouette accents the base
-  rather than overwriting it.
-- **The exponent is a uniform, and it is responsive.** 5.0 on desktop
-  confines the rim to genuinely grazing angles; portrait drops to ~2.5,
-  because at small pixel-per-letter sizes a thin rim disappears
-  altogether. Anything tuned by eye at one viewport needs a second value
-  for the other.
+- **The rim is capped, not additive.** Scale the fresnel weight of the
+  `mix` toward the rim color to a maximum below 1, so the silhouette
+  accents the base rather than overwriting it.
+- **The exponent is a uniform, and it is responsive.** A high
+  `uFresnelPower` confines the rim to genuinely grazing angles at desktop
+  sizes; portrait needs a lower one, because at small on-screen sizes a
+  thin rim disappears altogether. Anything tuned by eye at one viewport
+  needs a second value for the other.
 
-It also uses the same two GLSL-1 safe moves as the recipe above: the
-world normal by direction transform, and the `!gl_FrontFacing` flip.
+Keep the two GLSL-1 safe moves from the recipe above: the world normal by
+direction transform, and the `!gl_FrontFacing` flip.
 
 ## Reference
 

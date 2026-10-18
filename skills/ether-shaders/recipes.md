@@ -180,7 +180,7 @@ for (const l of letters) {
 ```
 
 Three-pass pipeline:
-1. Per-glyph extrusions — opentype loads the TTF (or takes a loaded `Font`), converts each glyph to an SVG path, `SVGLoader` handles glyph holes (counters in O, A), `ExtrudeGeometry` produces the mesh.
+1. Per-glyph extrusions — opentype loads the TTF (or takes a loaded `Font`), converts each glyph to an SVG path, `SVGLoader` parses it and `SVGLoader.createShapes` handles glyph holes (counters in O, A; on ether 1.3+ with three r185+, `ShapePath.toShapes()` does), `ExtrudeGeometry` produces the mesh.
 2. Word bounding box.
 3. Centre + flip + record per-letter `assembledPosition` / `assembledScale` for animation choreography.
 

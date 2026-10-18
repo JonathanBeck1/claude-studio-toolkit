@@ -54,7 +54,7 @@ Report them as a short "Noticed, not done" list. That list is valuable — it is
 Budget: ~2 lines in 1 file — the scroll trigger was never killed on scene teardown.
 
 Changed
-- src/scene/HeroScene.ts:214 — added `this.dimTrigger?.kill()` to dispose()
+- src/scene/HeroScene.ts:214 — added `this.dimTrigger?.kill()` and `this.dimTrigger = null` to `killTriggers()`, which `exitTransition()` calls before its first `await` and `dispose()` calls as the backstop
 
 Verified
 - Navigated home → /work → home; no duplicate trigger fires (was: alpha snapped on second visit)
