@@ -145,7 +145,7 @@ Branch: feat/hero-rim  •  Files audited: 3
 
 ### Hooks (`hooks/hooks.json`)
 
-Remind-only — they print, never block.
+Remind-only — they add a note to Claude's context, never block.
 
 | Hook | Event | Fires when |
 |---|---|---|

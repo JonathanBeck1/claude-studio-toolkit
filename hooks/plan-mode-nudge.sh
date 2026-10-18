@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # PostToolUse hook for Edit|Write|MultiEdit.
-# Increments a per-session edit counter. On the 4th edit, prints a one-shot
+# Increments a per-session edit counter. On the 4th edit, adds a one-shot
 # nudge toward Plan mode and worktrees. Does not re-fire after the trigger.
 set -euo pipefail
 
@@ -14,7 +14,7 @@ count=$((count + 1))
 echo "$count" > "$state_file"
 
 if [ "$count" = "4" ]; then
-  cat <<'EOF'
+  python3 -c 'import json,sys; print(json.dumps({"hookSpecificOutput": {"hookEventName": "PostToolUse", "additionalContext": sys.stdin.read()}}))' <<'EOF'
 [hook:plan-mode-nudge] You've edited 4 files this session. If this is a
 multi-file change, consider:
   - Plan mode — agree the approach before editing, then execute.
