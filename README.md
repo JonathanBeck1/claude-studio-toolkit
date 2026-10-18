@@ -85,7 +85,7 @@ their triggers without being named). Hooks arm on load.
 | `ether-scroll` | Lenis, ScrollTrigger, scroll-driven 3D | The one-rAF-loop rule, conditional smooth scroll by GPU tier and reduced motion, progress-scrub vs class-toggle vs body-flag patterns, scroll-restoration, paired teardown |
 | `studio-onboard` | "I'm new", "where do I start" | A deterministic first-session ritual whose tour is a template filled from the repo's own CLAUDE.md and README |
 
-Every skill ships `evals/triggers.json`: ~20 realistic prompts labeled
+Every skill ships `evals/triggers.json`: 20-30 realistic prompts labeled
 should/shouldn't trigger, weighted toward near-misses. They are regression
 suites for the skill descriptions — see [Evals](#evals).
 
@@ -107,7 +107,7 @@ suites for the skill descriptions — see [Evals](#evals).
 2. Run `premium-review` on the diff, passing any evidence from the session verbatim (Evidence blocks, snapshot JSON, CI logs, your visual confirmation).
 3. Triage: Critical aborts; Should fix and NEEDS VISUAL VERIFICATION continue only on your explicit yes.
 4. Draft a conventional commit, show it with the diff summary, and commit only after you confirm. It stages named paths, lets hooks run, and passes `--no-verify` only if you explicitly ask.
-5. Push (setting upstream if needed; never to the default branch without instruction), then offer a PR via `gh pr create` and open it only on confirmation.
+5. Push, setting upstream if needed. On the default branch it stops unless you asked to push there and offers to branch first (`git switch -c <branch>`). Then it offers a PR via `gh pr create` and opens it only on confirmation.
 
 ### Agents (`agents/`)
 
@@ -148,7 +148,7 @@ Branch: feat/hero-rim  •  Files audited: 3
 
 ### Hooks (`hooks/hooks.json`)
 
-Remind-only — they print, never block.
+Remind-only — they add a note to Claude's context, never block.
 
 | Hook | Event | Fires when |
 |---|---|---|
@@ -187,16 +187,17 @@ provided.
 ## Evals
 
 A skill is only as good as its description — it decides whether the skill
-loads at the right moment. Each skill ships `evals/triggers.json`: about
-twenty realistic prompts, roughly half labeled `should_trigger: true` and
+loads at the right moment. Each skill ships `evals/triggers.json`: twenty
+to thirty realistic prompts, roughly half labeled `should_trigger: true` and
 half `false`, weighted toward near-misses that share vocabulary but need a
 different skill ("add a bloom glow to this photo" must not load a WebGL
-shader skill).
+shader skill). From `ether-threejs`, where the composer prompt belongs to
+`ether-shaders`:
 
 ```json
 [
-  {"query": "Add a postprocessing chain with bloom and grain to the three.js scene", "should_trigger": true},
-  {"query": "Animate this DOM heading with a GSAP fade-up on page load",             "should_trigger": false}
+  {"query": "Wire up the persistent WebGL canvas so it survives route changes between pages", "should_trigger": true},
+  {"query": "Add a postprocessing chain with bloom and grain to the three.js scene I'm building", "should_trigger": false}
 ]
 ```
 
@@ -212,16 +213,16 @@ of `evals/fixture/` — a small Astro + three.js project, so "walk me through
 this repo" has a repo to walk through. The first `Skill` call within two
 turns is the verdict. Stdlib Python; needs the `claude` CLI on `PATH`.
 
-Measured 2026-09-05 with `sonnet` ([full report](./evals/RESULTS.md)):
+Measured 2026-10-18 with `sonnet` ([full report](./evals/RESULTS.md)):
 
 | Skill | should fire | fired | should not | fired anyway |
 |---|---|---|---|---|
-| `ether-threejs` | 8 | 6 | 12 | 0 |
-| `ether-shaders` | 10 | 10 | 10 | 0 |
-| `ether-scroll` | 10 | 9 | 10 | 0 |
+| `ether-threejs` | 14 | 14 | 15 | 0 |
+| `ether-shaders` | 10 | 9 | 10 | 0 |
+| `ether-scroll` | 10 | 10 | 10 | 0 |
 | `studio-onboard` | 10 | 10 | 10 | 0 |
 
-Zero false positives across 42 should-not queries; the three misses fired
+Zero false positives across 45 should-not queries; the one miss fired
 nothing rather than the wrong skill. Results move a little between runs — a
 single flip is noise, a pattern is a description problem. Run with
 `--no-isolate` on a machine with a broad personal skill library and a few

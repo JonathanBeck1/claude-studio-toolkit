@@ -14,9 +14,10 @@ except Exception:
 print(d.get("tool_input", {}).get("file_path", ""))
 ' 2>/dev/null || true)
 
+# shellcheck disable=SC2254 # the pattern variable is a glob on purpose
 case "$file_path" in
   ${STUDIO_ENGINE_GLOB:-*/ether/src/*})
-    cat <<'EOF'
+    python3 -c 'import json,sys; print(json.dumps({"hookSpecificOutput": {"hookEventName": "PostToolUse", "additionalContext": sys.stdin.read()}}))' <<'EOF'
 [hook:kit-drift-reminder] Engine source touched. If the public surface changed
 (exports, signatures, files moved), sync the docs in the SAME PR:
   - the engine README (API table + config examples)

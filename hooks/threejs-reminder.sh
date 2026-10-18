@@ -15,9 +15,10 @@ except Exception:
 print(d.get("tool_input", {}).get("file_path", ""))
 ' 2>/dev/null || true)
 
+# shellcheck disable=SC2254 # the pattern variable is a glob on purpose
 case "$file_path" in
   ${STUDIO_SCENE_GLOB:-*/src/scene/*})
-    cat <<'EOF'
+    python3 -c 'import json,sys; print(json.dumps({"hookSpecificOutput": {"hookEventName": "PostToolUse", "additionalContext": sys.stdin.read()}}))' <<'EOF'
 [hook:threejs-reminder] Scene file touched. Before reporting complete:
   1. Invoke the `ether-threejs` skill — confirm against the slop checklist.
   2. Run the `premium-review` subagent.

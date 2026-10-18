@@ -1,6 +1,6 @@
 ---
 name: ether-threejs
-description: Premium three.js technique reference for studio-grade WebGL. Use this skill BEFORE writing any three.js code on a premium-tier deliverable. Contains annotated reference work, vetted technique recipes, reusable GLSL shader snippets, performance budgets, and a slop checklist for self-review. Triggers on writing three.js code, building WebGL scenes, designing 3D web experiences, scene architecture, geometry strategy, instancing, camera and render-loop setup, performance budgets, scroll-driven 3D, persistent-canvas routing, premium agency-grade WebGL. Do NOT use for non-3D TypeScript, plain DOM/CSS animation, or review-only passes — use the threejs-audit command to critique existing 3D code. For GLSL, fragment/vertex shaders, ShaderMaterial, the iridescent material, vertex displacement, MSDF/extruded 3D text, or the bloom+dither postprocessing composer, use ether-shaders instead.
+description: Premium three.js technique reference for studio-grade WebGL. Use this skill BEFORE writing any three.js code on a premium-tier deliverable. Contains reference work, technique recipes, GLSL snippets, and a slop checklist. Triggers on writing three.js code, building WebGL scenes, designing 3D web experiences, scene architecture, geometry strategy, instancing, camera and render-loop setup, performance budgets, scroll-driven 3D, multi-beat camera moves across a scroll story, a canvas or scene persisting across pages and route changes, scene lifecycle between pages, premium agency-grade WebGL. Do NOT use for non-3D TypeScript, plain DOM/CSS animation, or review-only passes — use the threejs-audit command to critique existing 3D code. For GLSL, fragment/vertex shaders, ShaderMaterial, the iridescent material, vertex displacement, MSDF/extruded 3D text, or the bloom+dither postprocessing composer, use ether-shaders instead. For the Lenis/ScrollTrigger bridge or a single scroll-progress value, use ether-scroll.
 ---
 
 # ether-threejs
@@ -25,7 +25,7 @@ Invoke this skill before any three.js work on premium-tier deliverables. The ski
 - **`slop-checklist.md`** — tier table and concrete anti-patterns. Classify, then run before commit.
 - **`performance.md`** — budgets, profiling techniques, mobile checklist
 - **`techniques/`** — one file per reusable technique with code recipes
-- **`shaders/`** — `.glsl` snippets (e.g. imported via `?raw`). `dither.glsl` is the chunk the engine ships as `ether/shaders`; `fresnel.glsl`, `curl-noise.glsl` and `color-grade.glsl` are standalone reference snippets the engine does not ship (the engine grades through `loadLUT` and `LUT3DEffect`).
+- **`shaders/`** — `.glsl` snippets (e.g. imported via `?raw`). `fresnel.glsl`, `curl-noise.glsl` and `color-grade.glsl` are standalone reference snippets the engine does not ship (the engine grades through `loadLUT` and `LUT3DEffect`). The 8×8 Bayer dither chunk is not copied here; import the engine's: `import { dither } from 'ether/shaders'` (string) or `import dither from 'ether/shaders/dither.glsl?raw'` (file). Those are the specifiers for a git or `file:` install; an npm install (not yet published) uses `@jonathanbeck1/ether/shaders` and `@jonathanbeck1/ether/shaders/dither.glsl?raw`.
 
 ## Maintenance
 

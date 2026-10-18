@@ -23,7 +23,7 @@ Steps in order — do not skip:
 
 6. **Stage and commit.** Use `git add` with specific file paths (never `-A` for safety). Use HEREDOC for the commit message to preserve formatting. Hooks may fire — let them. Do not pass `--no-verify` unless the user explicitly asks.
 
-7. **Push to remote.** If the branch has no upstream, use `git push -u origin <branch>`. Report the remote ref.
+7. **Push to remote.** If the current branch is the repo's default branch (resolved the way the `premium-review` agent resolves it), stop unless the user explicitly asked to push there, and offer to branch first: `git switch -c <branch>` puts the commit on a new branch to push instead, but the default branch still holds it locally, so offer to move that branch back with `git branch -f <default> origin/<default>` and run it only after the user confirms. If the branch has no upstream, use `git push -u origin <branch>`. Report the remote ref.
 
 8. **Offer to open a PR.** If the branch isn't the repo's default branch, ask whether to open a PR via `gh pr create`. Don't open it without confirmation. Use this PR template:
    ```
