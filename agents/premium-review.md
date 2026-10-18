@@ -72,7 +72,7 @@ For every changed file, decide which audits apply. A single file can trigger mor
 
 `threejs-audit` and `brand-check` are checklists, not tasks to delegate — do not invoke them as commands or skills from here. Apply them directly: Read each command file and follow it against the relevant file paths so the audit covers only what changed. The files ship beside this agent in the plugin's `commands/` directory — locate them with Glob (`**/commands/threejs-audit.md`, `**/commands/brand-check.md`); a project's own `.claude/commands/` copy also counts:
 
-- three.js triggered → Read `threejs-audit.md` and apply its checklist to the file list
+- three.js triggered → Read `threejs-audit.md` and apply its checklist to the file list. Classify each scene's tier first, as it directs, and apply the slop-checklist lines that tier names; the other threejs-audit categories apply at every tier
 - Apply threejs-audit's **source** layer. Its runtime and visual layers need a browser you don't run. Count only evidence present in your prompt or in files you opened because the prompt named them: a `/threejs-audit` Evidence block, a snapshot JSON, a CI log, a user's visual confirmation. Check that its commit matches `git rev-parse --short HEAD`, that a `+dirty:<fingerprint>` still matches `git diff HEAD | git hash-object --stdin | cut -c1-7` (a mismatch means the code changed after capture), and that it covers the changed routes; otherwise treat it as not provided. Interpret it with `performance.md` (Runtime diagnostics) and cite numbers verbatim, with provenance. A source fact is never a runtime claim: "DPR cap present" is source; "dpr 1.5 applied on /" is runtime.
 - brand triggered → Read `brand-check.md` and apply its checklist to the file list
 - always → apply the read-only ship-readiness review below (do NOT invoke any `ship` skill or the `/ship` command — `/ship` orchestrates *you*, so calling it would loop)
@@ -83,7 +83,7 @@ The command checklists produce the findings. Your job is to collect, dedupe, and
 
 If a command file isn't available, fall back to inline review using these built-in checks:
 
-**three.js slop checklist (inline fallback):**
+**three.js slop checklist (inline fallback):** classify the tier first (1 utility, 2 branded, 3 hero). At Tier 3 every line binds; at Tier 2 the Tier 1 lines bind and each other line is met or its omission stated; at Tier 1 only the hardcoded-hex line and the cost lines (`useFrame`, DPR, offscreen) apply.
 - Default lighting (just AmbientLight + DirectionalLight at full intensity) — slop
 - Generic postprocessing stack (Bloom + Vignette only) on its own — slop
 - Default tone mapping with no exposure tuning — slop
@@ -126,9 +126,12 @@ Branch: <name>  •  Files audited: <count>
 - <relative/path.tsx:200> — <suggestion>
 
 ## Passed
-- threejs-audit: <what you actually inspected — e.g. "scene/HeroSculpture.ts: custom ShaderMaterial, bloom+dither composer, DPR cap present">
+- threejs-audit: <what you actually inspected — e.g. "scene/HeroSculpture.ts (Tier 3): custom ShaderMaterial, bloom+dither composer, DPR cap present">
 - brand-check: <what you actually inspected — e.g. "Hero.tsx: colors resolve to brand tokens, display face matches the brand reference">
 - ship-readiness: <what you actually inspected — e.g. no leftover logs/secrets, scope matches task>
+
+## Tiers
+- <scene>: Tier <1|2|3> — <reason>, when threejs-audit applied
 
 ## Evidence
 - runtime: <provenance + numbers relied on> | not needed — <reason, e.g. no ether 1.2+ scene in the diff> | not provided
@@ -165,4 +168,4 @@ Rules for the punch list:
 
 The cost of a false positive (flagging a non-issue) is low; the cost of a false negative (missing real slop that ships) is high. Lean toward calling out the borderline cases, but mark them honestly — "Optional" for stylistic, "Should fix" for noticeable, "Critical" only when it's clearly broken or off-brand.
 
-When you're not sure if something is slop, ask: *would this be in the top reference scenes on the ether-threejs skill?* If clearly no, flag it.
+When you're not sure if something is slop in a Tier 3 scene, ask: *would this be in the top reference scenes on the ether-threejs skill?* If clearly no, flag it. For Tier 1 and 2, ask whether it meets its tier's lines.
